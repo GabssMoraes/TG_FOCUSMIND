@@ -146,6 +146,7 @@
 }
 
 .nav-cta {
+    margin-left: 0.5rem;
     background: var(--accent) !important;
     color: white !important;
     font-weight: 500;
@@ -153,6 +154,53 @@
 
 .nav-cta:hover {
     opacity: .85;
+}
+
+/* ── DROPDOWN DO PERFIL ── */
+.profile-menu {
+    position: relative;
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 14px);
+    right: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 160px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    animation: fadeIn .2s ease;
+}
+
+.dropdown-item {
+    background: transparent !important;
+    border: none;
+    color: var(--text) !important;
+    padding: 10px 14px !important;
+    text-align: left;
+    border-radius: 8px !important;
+    font-size: .92rem !important;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+    width: 100%;
+}
+
+.dropdown-item:hover {
+    background: var(--bg3) !important;
+}
+
+.dropdown-item.danger {
+    color: #ff4b4b !important;
+}
+
+.dropdown-item.danger:hover {
+    background: rgba(255, 75, 75, 0.1) !important;
 }
 
 /* ── HERO ── */

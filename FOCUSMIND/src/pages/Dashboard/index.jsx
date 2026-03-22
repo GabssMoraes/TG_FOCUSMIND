@@ -31,7 +31,7 @@ export default function Dashboard() {
 
                 <div className={styles['main-content']}>
                     <div className={styles.greeting}>
-                        <h2>Boa tarde, Ana! 👋</h2>
+                        <h2>Boa tarde, Teste da Silva 👋</h2>
                         <p>Você tem 3 matérias programadas para hoje. Sua sequência está em 5 dias 🔥</p>
                     </div>
 
