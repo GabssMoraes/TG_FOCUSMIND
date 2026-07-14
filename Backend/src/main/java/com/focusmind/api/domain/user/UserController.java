@@ -5,23 +5,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController // Diz pro Spring que aqui teremos endpoints de API
+@RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "*") // Importante: Permite as requisições do seu React (porta 5173/3000)
+@CrossOrigin(origins = "*")
 public class UserController {
 
     @Autowired
     private UserRepository userRepository;
 
-    // Rota para Cadastrar novo Usuário
     @PostMapping("/cadastrar")
     public ResponseEntity<String> register(@RequestBody RegisterDTO data) {
-        // Validação: Checar se e-mail já existe
         if (userRepository.existsByEmail(data.email())) {
             return ResponseEntity.badRequest().body("Erro: E-mail já está em uso!");
         }
 
-        // Criando a entidade e salvando
         User newUser = new User();
         newUser.setName(data.name());
         newUser.setEmail(data.email());
@@ -32,21 +29,63 @@ public class UserController {
         return ResponseEntity.ok("Usuário cadastrado com sucesso!");
     }
 
-    // Rota para Fazer o Login
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginDTO data) {
         var userOptional = userRepository.findByEmail(data.email());
 
-        // Achei o email? A senha também está correta? (Em produção use senhas encriptadas Ex: BCrypt)
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (user.getPassword().equals(data.password())) {
-                // Sucesso no login, retornamos o ID do usuário para o Frontend salvar no LocalStorage
                 return ResponseEntity.ok(user.getId().toString());
             }
         }
         
-        // Retorna status 401 Unauthorized se qualquer um estiver incorreto
         return ResponseEntity.status(401).body("E-mail ou senha inválidos!");
     }
+
+    @GetMapping("/{id}/perfil")
+    public ResponseEntity obterPerfil(@PathVariable Long id) {
+        var userOptional = userRepository.findById(id);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOptional.get();
+        return ResponseEntity.ok(new PerfilDTO(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getNivel(),
+            user.getPontos(),
+            user.getStreakDias()
+        ));
+    }
+
+    @PostMapping("/{id}/gastar")
+    public ResponseEntity gastarMoedas(@PathVariable Long id, @RequestBody GastarRequestDTO data) {
+        var userOptional = userRepository.findById(id);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOptional.get();
+        if (user.getPontos() < data.preco()) {
+            return ResponseEntity.badRequest().body("Saldo de pontos/moedas insuficiente!");
+        }
+
+        user.setPontos(user.getPontos() - data.preco());
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new PerfilDTO(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getNivel(),
+            user.getPontos(),
+            user.getStreakDias()
+        ));
+    }
+
+    public record PerfilDTO(Long id, String name, String email, Long nivel, Integer pontos, Integer streakDias) {}
+    public record GastarRequestDTO(Integer preco, String item) {}
 }

@@ -108,8 +108,6 @@ h1 {
 /* ── TIMER SPECIFIC ── */
 
 .timer-page {
-    padding-top: 70px;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;

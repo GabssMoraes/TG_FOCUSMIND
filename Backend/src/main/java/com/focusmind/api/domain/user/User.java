@@ -2,6 +2,7 @@ package com.focusmind.api.domain.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Table(name = "\"USUARIOS\"")
 @Entity(name = "USUARIOS")
@@ -25,4 +26,20 @@ public class User {
 
     @Column(name = "\"SENHA\"", nullable = false)
     private String password;
+
+    @Column(name = "\"DT_CADASTRO\"")
+    private LocalDateTime dtCadastro = LocalDateTime.now();
+
+    @Column(name = "\"NIVEL\"")
+    private Long nivel = 1L;
+
+    @Column(name = "\"PONTOS\"")
+    private Integer pontos = 0;
+
+    @Column(name = "\"STREAK_DIAS\"")
+    private Integer streakDias = 0;
+
+    @Column(name = "\"OBJ_PRINCIPAL\"")
+    private String objPrincipal;
 }
+

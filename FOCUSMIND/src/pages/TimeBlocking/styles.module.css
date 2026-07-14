@@ -1,0 +1,219 @@
+.page {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.container {
+    max-width: 100%;
+}
+
+.header {
+    margin-bottom: 25px;
+}
+
+.title {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.desc {
+    font-size: 0.9rem;
+    color: #7a8099;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 30px;
+}
+
+@media (max-width: 900px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.card {
+    background: #1e2330;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    height: fit-content;
+}
+
+.cardTitle {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dayColumn {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 250px;
+}
+
+.dayName {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #c0b8f7;
+    text-align: center;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 6px;
+}
+
+.blockItem {
+    background: rgba(124, 108, 250, 0.15);
+    border-left: 3px solid #7c6cfa;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 8px;
+    font-size: 0.75rem;
+    position: relative;
+    animation: scaleIn 0.2s ease;
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.blockTime {
+    font-weight: 600;
+    color: #4ecdc4;
+    margin-bottom: 3px;
+}
+
+.blockSubject {
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btnDeleteBlock {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    font-size: 0.7rem;
+    cursor: pointer;
+    opacity: 0.6;
+}
+
+.btnDeleteBlock:hover {
+    opacity: 1;
+}
+
+.formAddBlock {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    background: rgba(0,0,0,0.15);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.inputField {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    flex: 1;
+    min-width: 100px;
+}
+
+.inputField:focus {
+    outline: none;
+    border-color: #7c6cfa;
+}
+
+.btnPrimary {
+    background: #7c6cfa;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btnPrimary:hover {
+    background: #6a59e6;
+}
+
+.btnSecondary {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btnSecondary:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.aiCard {
+    background: rgba(124, 108, 250, 0.06);
+    border: 1px dashed rgba(124, 108, 250, 0.3);
+    border-radius: 12px;
+    padding: 18px;
+    line-height: 1.5;
+    font-size: 0.82rem;
+    color: #c0b8f7;
+}
+
+.aiResponseBox {
+    margin-top: 15px;
+    white-space: pre-wrap;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 14px;
+    max-height: 380px;
+    overflow-y: auto;
+    font-size: 0.8rem;
+    border: 1px solid rgba(255,255,255,0.05);
+    color: #e8eaf0;
+}

@@ -37,7 +37,8 @@ function Login() {
                 return;
             }
 
-            login();
+            const id = await response.text();
+            login(id);
             toast.success("Login aprovado!");
             navigate('/dashboard');
         } catch (error) {

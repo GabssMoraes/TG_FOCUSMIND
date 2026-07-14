@@ -1,0 +1,173 @@
+.page {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.container {
+    max-width: 100%;
+}
+
+.header {
+    margin-bottom: 30px;
+}
+
+.title {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.desc {
+    font-size: 0.9rem;
+    color: #7a8099;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.card {
+    background: #1e2330;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    height: fit-content;
+}
+
+.cardTitle {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.formGroup {
+    margin-bottom: 18px;
+}
+
+.label {
+    display: block;
+    font-size: 0.82rem;
+    color: #c0b8f7;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.textarea {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 12px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    resize: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.textarea:focus {
+    outline: none;
+    border-color: #7c6cfa;
+    box-shadow: 0 0 0 2px rgba(124, 108, 250, 0.15);
+}
+
+.btnSubmit {
+    width: 100%;
+    background: #7c6cfa;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    padding: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btnSubmit:hover {
+    background: #6a59e6;
+}
+
+.btnSubmit:active {
+    transform: scale(0.98);
+}
+
+.reviewItem {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 15px;
+    transition: transform 0.2s;
+}
+
+.reviewItem:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.reviewHeader {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #7a8099;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 6px;
+}
+
+.reviewDate {
+    font-weight: 600;
+}
+
+.reviewCoins {
+    color: #4ecdc4;
+    font-weight: bold;
+}
+
+.reviewQ {
+    font-size: 0.8rem;
+    color: #c0b8f7;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+.reviewA {
+    font-size: 0.82rem;
+    color: #e8eaf0;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.aiResponse {
+    margin-top: 12px;
+    background: rgba(124, 108, 250, 0.08);
+    border-left: 3px solid #7c6cfa;
+    padding: 10px 12px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.8rem;
+    color: #c0b8f7;
+    line-height: 1.45;
+}

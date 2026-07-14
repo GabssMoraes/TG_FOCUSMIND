@@ -89,12 +89,8 @@ h1 {
 
 /* ── PERFIL ── */
 .profile-page {
-    padding-top: 100px;
     max-width: 800px;
     margin: 0 auto;
-    padding-left: 40px;
-    padding-right: 40px;
-    padding-bottom: 80px;
 }
 
 .profile-header {
