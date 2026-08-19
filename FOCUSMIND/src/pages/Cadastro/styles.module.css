@@ -15,7 +15,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    padding: 120px 20px 60px;
+    padding: 100px 20px 60px;
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
@@ -23,15 +23,8 @@
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-    }
-
-    to {
-        opacity: 1;
-        transform: none;
-    }
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
 }
 
 .cadastroCard {
@@ -39,9 +32,9 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 20px;
-    padding: 40px;
+    padding: 36px 40px 32px;
     width: 100%;
-    max-width: 420px;
+    max-width: 460px;
     position: relative;
     overflow: hidden;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -50,9 +43,7 @@
 .cadastroCard::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     height: 3px;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
 }
@@ -65,7 +56,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    margin-bottom: 8px;
+    margin-bottom: 20px;
 }
 
 .logoDot {
@@ -78,35 +69,104 @@
 }
 
 @keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 0.6;
-        transform: scale(0.85);
-    }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
 }
 
-.subtitle {
+/* ── Step Indicator ── */
+.stepIndicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 6px;
+}
+
+.stepDot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.stepActive {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 16px rgba(124, 108, 250, 0.4);
+}
+
+.stepLine {
+    height: 2px;
+    width: 80px;
+    background: var(--border);
+    transition: background 0.4s ease;
+}
+
+.stepLineActive {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+
+.stepLabel {
     text-align: center;
     color: var(--muted);
-    font-size: 0.95rem;
-    margin-bottom: 32px;
+    font-size: 0.88rem;
+    margin-bottom: 24px;
+    font-weight: 500;
 }
 
+/* ── Study Info Box ── */
+.studyInfoBox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(124, 108, 250, 0.08);
+    border: 1px solid rgba(124, 108, 250, 0.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+}
+
+.studyInfoIcon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.studyInfoBox p {
+    font-size: 0.88rem;
+    color: #a89cf7;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── Form Row (side-by-side inputs) ── */
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/* ── Form Group ── */
 .formGroup {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .formGroup label {
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.83rem;
     color: var(--muted);
-    margin-bottom: 8px;
+    margin-bottom: 7px;
     font-weight: 500;
 }
 
@@ -115,12 +175,13 @@
     background: var(--bg2);
     border: 1px solid var(--border);
     color: var(--text);
-    padding: 14px 16px;
+    padding: 13px 15px;
     border-radius: 12px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
+    font-size: 0.93rem;
     outline: none;
     transition: border-color .2s, box-shadow .2s;
+    box-sizing: border-box;
 }
 
 .input:focus {
@@ -128,14 +189,24 @@
     box-shadow: 0 0 0 3px rgba(124, 108, 250, .15);
 }
 
-.input::placeholder {
-    color: var(--muted);
+.input::placeholder { color: var(--muted); }
+
+/* Date input theming */
+.input[type="date"] {
+    color-scheme: dark;
 }
 
+/* ── Form Actions ── */
+.formActions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+/* ── Buttons ── */
 .btnPrimary {
     width: 100%;
     background: var(--accent2);
-    /* Usando o accent2 (teal/ciano) para diferenciar um pouco do Login e dar um ar super moderno */
     color: #000;
     border: none;
     padding: 14px;
@@ -154,13 +225,32 @@
     box-shadow: 0 12px 32px rgba(78, 205, 196, .4);
 }
 
-.btnPrimary:active {
-    transform: translateY(0);
+.btnPrimary:active { transform: translateY(0); }
+
+.btnSecondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: color .2s, border-color .2s;
+    white-space: nowrap;
 }
 
+.btnSecondary:hover {
+    color: var(--text);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Footer ── */
 .footerText {
     text-align: center;
-    margin-top: 24px;
+    margin-top: 22px;
     font-size: 0.9rem;
     color: var(--muted);
 }
@@ -172,6 +262,4 @@
     transition: color .2s;
 }
 
-.footerText a:hover {
-    color: var(--accent);
-}
+.footerText a:hover { color: var(--accent); }

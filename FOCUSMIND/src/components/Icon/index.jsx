@@ -40,7 +40,14 @@ const ICON_MAP = {
     volumeMute: 'fa-solid fa-volume-xmark',
     info: 'fa-solid fa-circle-info',
     trophy: 'fa-solid fa-trophy',
-    handWave: 'fa-solid fa-hand'
+    handWave: 'fa-solid fa-hand',
+    gift: 'fa-solid fa-gift',
+    box: 'fa-solid fa-box-open',
+    book: 'fa-solid fa-book',
+    xmark: 'fa-solid fa-xmark',
+    cross: 'fa-solid fa-xmark',
+    pen: 'fa-solid fa-pen',
+    tree: 'fa-solid fa-tree'
 };
 
 export default function Icon({ name, className = '', style = {}, ...props }) {

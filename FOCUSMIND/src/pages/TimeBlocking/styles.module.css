@@ -100,6 +100,34 @@
     font-size: 0.75rem;
     position: relative;
     animation: scaleIn 0.2s ease;
+    cursor: grab;
+    transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+}
+
+.blockItem:active {
+    cursor: grabbing;
+}
+
+.dragging {
+    opacity: 0.5;
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    border-style: dashed;
+}
+
+.emptyColumn {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.2);
+    text-align: center;
+    padding: 20px 0;
+    border: 2px dashed rgba(255,255,255,0.1);
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.dayColumn:hover .emptyColumn {
+    background: rgba(255,255,255,0.02);
+    color: rgba(255,255,255,0.4);
 }
 
 @keyframes scaleIn {
@@ -121,19 +149,25 @@
     text-overflow: ellipsis;
 }
 
-.btnDeleteBlock {
+.blockActions {
     position: absolute;
     top: 2px;
     right: 2px;
+    display: flex;
+    gap: 4px;
+}
+
+.btnActionBlock {
     background: none;
     border: none;
-    color: #ff6b6b;
+    color: #c0b8f7;
     font-size: 0.7rem;
     cursor: pointer;
     opacity: 0.6;
+    transition: opacity 0.2s, color 0.2s;
 }
 
-.btnDeleteBlock:hover {
+.btnActionBlock:hover {
     opacity: 1;
 }
 

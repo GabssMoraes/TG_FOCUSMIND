@@ -1,9 +1,198 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import Icon from '../../components/Icon';
 import styles from './styles.module.css';
+
+// ── Constelações famosas com threshold por estrela (viewBox 0 0 100 60) ──
+const CONSTELLATIONS = [
+    {
+        name: 'Orion — O Caçador',
+        stars: [
+            { id: 0, cx: 38, cy: 20, threshold: 0,  size: 1.4 }, // Betelgeuse
+            { id: 1, cx: 55, cy: 17, threshold: 14, size: 1.1 }, // Bellatrix
+            { id: 2, cx: 42, cy: 33, threshold: 25, size: 1.0 }, // Alnitak
+            { id: 3, cx: 49, cy: 32, threshold: 37, size: 1.0 }, // Alnilam
+            { id: 4, cx: 56, cy: 31, threshold: 50, size: 1.0 }, // Mintaka
+            { id: 5, cx: 33, cy: 48, threshold: 63, size: 1.3 }, // Rigel
+            { id: 6, cx: 60, cy: 47, threshold: 76, size: 1.0 }, // Saiph
+            { id: 7, cx: 46, cy: 23, threshold: 90, size: 0.8 }, // Meissa
+        ],
+        edges: [[0,7],[1,7],[0,2],[1,4],[2,3],[3,4],[2,5],[4,6]],
+    },
+    {
+        name: 'Ursa Maior — A Concha',
+        stars: [
+            { id: 0, cx: 15, cy: 42, threshold: 0,  size: 1.1 },
+            { id: 1, cx: 25, cy: 35, threshold: 13, size: 1.0 },
+            { id: 2, cx: 36, cy: 30, threshold: 26, size: 1.1 },
+            { id: 3, cx: 50, cy: 26, threshold: 40, size: 0.9 },
+            { id: 4, cx: 58, cy: 15, threshold: 54, size: 1.0 },
+            { id: 5, cx: 69, cy: 22, threshold: 67, size: 1.2 },
+            { id: 6, cx: 65, cy: 34, threshold: 80, size: 1.0 },
+            { id: 7, cx: 50, cy: 38, threshold: 92, size: 0.9 },
+        ],
+        edges: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,3]],
+    },
+    {
+        name: 'Cassiopeia — O W',
+        stars: [
+            { id: 0, cx: 14, cy: 18, threshold: 0,  size: 1.2 },
+            { id: 1, cx: 28, cy: 40, threshold: 22, size: 1.1 },
+            { id: 2, cx: 46, cy: 12, threshold: 44, size: 1.3 },
+            { id: 3, cx: 64, cy: 38, threshold: 66, size: 1.0 },
+            { id: 4, cx: 80, cy: 10, threshold: 88, size: 1.1 },
+        ],
+        edges: [[0,1],[1,2],[2,3],[3,4]],
+    },
+    {
+        name: 'Leão — O Leão',
+        stars: [
+            { id: 0, cx: 20, cy: 44, threshold: 0,  size: 1.4 }, // Regulus
+            { id: 1, cx: 27, cy: 30, threshold: 14, size: 0.9 },
+            { id: 2, cx: 35, cy: 19, threshold: 28, size: 1.1 },
+            { id: 3, cx: 44, cy: 12, threshold: 42, size: 0.9 },
+            { id: 4, cx: 55, cy: 22, threshold: 56, size: 1.0 },
+            { id: 5, cx: 72, cy: 28, threshold: 70, size: 1.2 }, // Denebola
+            { id: 6, cx: 50, cy: 38, threshold: 85, size: 0.9 },
+        ],
+        edges: [[0,1],[1,2],[2,3],[3,4],[4,5],[4,6],[0,6]],
+    },
+    {
+        name: 'Cruz do Sul — Cruzeiro',
+        stars: [
+            { id: 0, cx: 50, cy: 8,  threshold: 0,  size: 1.3 }, // topo
+            { id: 1, cx: 50, cy: 52, threshold: 20, size: 1.1 }, // base
+            { id: 2, cx: 20, cy: 30, threshold: 40, size: 1.2 }, // esquerda
+            { id: 3, cx: 80, cy: 30, threshold: 60, size: 1.3 }, // direita - mais brilhante
+            { id: 4, cx: 62, cy: 18, threshold: 80, size: 0.8 }, // extra
+        ],
+        edges: [[0,1],[2,3],[0,4]],
+    },
+];
+
+// Estrelas de fundo — misto de pequenas e médias com brilho variado
+const BG_STARS = Array.from({ length: 80 }, (_, i) => ({
+    id: i,
+    cx: (((i * 37 + 13) % 98) + 1),
+    cy: (((i * 53 + 7)  % 58) + 1),
+    r: i % 5 === 0 ? 0.7 : i % 3 === 0 ? 0.45 : 0.28,
+    opacity: 0.2 + ((i * 17) % 60) / 100,
+    twinkleDelay: (i * 0.3) % 4,
+}));
+
+function FullScreenConstellation({ progress, constellationIdx }) {
+    const c = CONSTELLATIONS[constellationIdx % CONSTELLATIONS.length];
+
+    return (
+        <svg
+            className={styles.fullscreenConstellation}
+            viewBox="0 0 100 60"
+            preserveAspectRatio="xMidYMid slice"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            {/* Nebulosa de fundo — gradientes radiais suaves */}
+            <defs>
+                <radialGradient id="nebula1" cx="70%" cy="20%" r="40%">
+                    <stop offset="0%" stopColor="rgba(80,30,180,0.25)" />
+                    <stop offset="100%" stopColor="rgba(80,30,180,0)" />
+                </radialGradient>
+                <radialGradient id="nebula2" cx="20%" cy="70%" r="40%">
+                    <stop offset="0%" stopColor="rgba(10,60,160,0.2)" />
+                    <stop offset="100%" stopColor="rgba(10,60,160,0)" />
+                </radialGradient>
+                <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="rgba(192,184,247,0.8)" />
+                    <stop offset="100%" stopColor="rgba(192,184,247,0)" />
+                </radialGradient>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="0.4" result="blur" />
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+            </defs>
+
+            {/* Manchas de nebulosa */}
+            <rect width="100" height="60" fill="url(#nebula1)" />
+            <rect width="100" height="60" fill="url(#nebula2)" />
+
+            {/* Estrelas de fundo com brilho variado — agora no formato de 4 pontas */}
+            {BG_STARS.map(s => (
+                <path
+                    key={s.id}
+                    d="M0,-1 Q0,0 1,0 Q0,0 0,1 Q0,0 -1,0 Q0,0 0,-1 Z"
+                    fill={`rgba(255,255,255,${s.opacity})`}
+                    style={{
+                        transform: `translate(${s.cx}px, ${s.cy}px) scale(${s.r * 1.2})`,
+                        animation: `twinkle ${2 + s.twinkleDelay}s ease-in-out infinite alternate`,
+                        animationDelay: `${s.twinkleDelay}s`
+                    }}
+                />
+            ))}
+
+            {/* Linhas da constelação — aparecem só quando os 2 nós estão visíveis */}
+            {c.edges.map(([a, b]) => {
+                const starA = c.stars[a];
+                const starB = c.stars[b];
+                const visible = progress >= starA.threshold && progress >= starB.threshold;
+                return (
+                    <line
+                        key={`e-${a}-${b}`}
+                        x1={starA.cx} y1={starA.cy}
+                        x2={starB.cx} y2={starB.cy}
+                        stroke="rgba(192,184,247,0.6)"
+                        strokeWidth="0.35"
+                        strokeLinecap="round"
+                        style={{
+                            opacity: visible ? 1 : 0,
+                            transition: 'opacity 1.5s ease',
+                        }}
+                    />
+                );
+            })}
+
+            {/* Estrelas da constelação — aparecem progressivamente */}
+            {c.stars.map(s => {
+                const visible = progress >= s.threshold;
+                return (
+                    <g key={s.id} filter="url(#glow)" transform={`translate(${s.cx}, ${s.cy})`}>
+                        {/* Halo de brilho */}
+                        <circle
+                            cx="0" cy="0"
+                            r={s.size * 2.5}
+                            fill={visible ? 'rgba(192,184,247,0.15)' : 'transparent'}
+                            style={{ transition: 'fill 1.2s ease' }}
+                        />
+                        {/* Estrela principal em formato de 4 pontas */}
+                        <path
+                            d="M0,-1 Q0,0 1,0 Q0,0 0,1 Q0,0 -1,0 Q0,0 0,-1 Z"
+                            fill="#e8e4ff"
+                            style={{
+                                transform: `scale(${visible ? s.size * 1.5 : 0})`,
+                                transition: 'transform 0.8s cubic-bezier(0.34,1.56,0.64,1)',
+                                transformOrigin: 'center'
+                            }}
+                        />
+                    </g>
+                );
+            })}
+
+            {/* Nome da constelação */}
+            <text
+                x="50" y="57.5"
+                textAnchor="middle"
+                fontSize="2.8"
+                fill={`rgba(192,184,247,${Math.max(0, (progress - 70) / 30 * 0.7)})`}
+                fontFamily="DM Sans"
+                letterSpacing="0.6"
+                style={{ transition: 'fill 1s ease' }}
+            >
+                {c.name.toUpperCase()}
+            </text>
+        </svg>
+    );
+}
+
 
 export default function Timer() {
     const navigate = useNavigate();
@@ -11,6 +200,7 @@ export default function Timer() {
 
     // Timer states
     const [timerSeconds, setTimerSeconds] = useState(25 * 60);
+    const [constellationIdx, setConstellationIdx] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
     const [currentMode, setCurrentMode] = useState(25); // 25, 15, or 50 minutes
     const [sessionsCompleted, setSessionsCompleted] = useState(0);
@@ -152,12 +342,15 @@ export default function Timer() {
     const resetTimer = () => {
         setTimerRunning(false);
         setTimerSeconds(currentMode * 60);
+        // Sorteia nova constelação
+        setConstellationIdx(prev => (prev + 1) % CONSTELLATIONS.length);
     };
 
     const changeMode = (minutes) => {
         setTimerRunning(false);
         setCurrentMode(minutes);
         setTimerSeconds(minutes * 60);
+        setConstellationIdx(prev => (prev + 1) % CONSTELLATIONS.length);
     };
 
     const formatTime = (secs) => {
@@ -165,6 +358,16 @@ export default function Timer() {
         const s = (secs % 60).toString().padStart(2, '0');
         return `${m}:${s}`;
     };
+
+    // Lógica da Plantação de Foco
+    const progress = ((currentMode * 60 - timerSeconds) / (currentMode * 60)) * 100;
+    
+    // stage 0: semente (0%)
+    // stage 1: caule cresce (25%)
+    // stage 2: folhas (50%)
+    // stage 3: copa (75%)
+    // stage 4: frutos (100%)
+    const plantStage = progress >= 100 ? 4 : progress >= 75 ? 3 : progress >= 50 ? 2 : progress >= 15 ? 1 : 0;
 
     const handleSaveFeedback = async () => {
         // Formatar tempo real e planejado (HH:mm:ss)
@@ -207,9 +410,15 @@ export default function Timer() {
         }
     };
 
+    // Opacidade do timer: começa em 1, vai diminuindo para 0.20 ao final para revelar a constelação
+    const timerOpacity = Math.max(0.20, 1 - (progress / 100) * 0.8);
+
     return (
         <div className={styles.page}>
-            <div className={styles['timer-page']}>
+            {/* Constelação full-screen de fundo */}
+            <FullScreenConstellation progress={progress} constellationIdx={constellationIdx} />
+
+            <div className={styles['timer-page']} style={{ opacity: timerOpacity, transition: 'opacity 1.5s ease' }}>
                 <div className={`${styles.section} ${styles['timer-section']}`}>
                     <div className={styles['section-label']}>Temporizador de Foco</div>
                     <div className={styles['section-title']}>Sessão de Estudos</div>
@@ -221,31 +430,43 @@ export default function Timer() {
 
                 <div className={styles['chips-row']}>
                     <button
+                        className={`${styles.chip} ${currentMode === 1 ? styles.activeChip : ''}`}
+                        onClick={() => changeMode(1)}
+                        title="Modo rápido para testes"
+                    >
+                        <Icon name="timer" style={{ marginRight: '6px' }} /> 1 min (Teste)
+                    </button>
+                    <button
                         className={`${styles.chip} ${currentMode === 25 ? styles.activeChip : ''}`}
                         onClick={() => changeMode(25)}
                     >
-                        <Icon name="timer" style={{ marginRight: '6px' }} /> 25/5 min (Clássico)
+                        <Icon name="timer" style={{ marginRight: '6px' }} /> 25 min (Clássico)
                     </button>
                     <button
                         className={`${styles.chip} ${currentMode === 15 ? styles.activeChip : ''}`}
                         onClick={() => changeMode(15)}
                     >
-                        <Icon name="star" style={{ marginRight: '6px' }} /> 15/3 min (TDAH adaptado)
+                        <Icon name="star" style={{ marginRight: '6px' }} /> 15 min (TDAH)
                     </button>
                     <button
                         className={`${styles.chip} ${currentMode === 50 ? styles.activeChip : ''}`}
                         onClick={() => changeMode(50)}
                     >
-                        <Icon name="fire" style={{ marginRight: '6px' }} /> 50/10 min (Avançado)
+                        <Icon name="fire" style={{ marginRight: '6px' }} /> 50 min (Avançado)
                     </button>
                 </div>
 
-                <div className={styles['big-timer']}>
-                    <div className={styles['big-timer-num']}>
-                        {formatTime(timerSeconds)}
-                    </div>
-                    <div className={styles['big-timer-label']}>
-                        {timerRunning ? 'Foco ativo...' : 'Pausado'}
+                {/* Timer circular - LIMPO */}
+                <div className={styles['big-timer']} style={{ 
+                    background: `conic-gradient(var(--accent) ${progress}%, rgba(255,255,255,0.05) ${progress}%)`
+                }}>
+                    <div className={styles['timer-inner']}>
+                        <div className={styles['big-timer-num']}>
+                            {formatTime(timerSeconds)}
+                        </div>
+                        <div className={styles['big-timer-label']}>
+                            {timerRunning ? 'Foco ativo...' : 'Pausado'}
+                        </div>
                     </div>
                 </div>
 
@@ -259,8 +480,14 @@ export default function Timer() {
                     </button>
                 </div>
 
+                {/* Legenda da constelação atual */}
+                <div className={styles.constellationBadge} style={{ opacity: Math.max(0.4, progress / 100) }}>
+                    <Icon name="star" style={{ marginRight: '5px', fontSize: '0.7rem' }} />
+                    {CONSTELLATIONS[constellationIdx % CONSTELLATIONS.length].name}
+                </div>
+
                 {/* Seção Modo Foco Avançado (Desbloqueado com Moedas) */}
-                <div className={styles['dash-card']} style={{ marginTop: '20px', width: '100%', maxWidth: '400px' }}>
+                <div className={styles['dash-card']} style={{ marginTop: '20px', marginBottom: '20px', width: '100%', maxWidth: '400px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                         <span style={{ fontSize: '0.85rem', fontWeight: 700, fontFamily: 'Syne', color: '#c0b8f7' }}>
                             <Icon name="headphones" style={{ marginRight: '6px' }} /> Modo Foco Avançado (Lofi / Sons)

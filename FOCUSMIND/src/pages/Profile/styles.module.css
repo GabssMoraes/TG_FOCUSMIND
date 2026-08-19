@@ -283,3 +283,69 @@ h1 {
         grid-template-columns: 1fr;
     }
 }
+
+/* ── BADGES / CONQUISTAS ── */
+.badges-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.badgeCard {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.badgeCard.unlocked {
+    background: linear-gradient(135deg, rgba(124, 108, 250, 0.1), rgba(78, 205, 196, 0.1));
+    border: 1px solid rgba(124, 108, 250, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 108, 250, 0.1);
+}
+
+.badgeCard.unlocked:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 108, 250, 0.2);
+}
+
+.badgeCard.locked {
+    opacity: 0.4;
+    filter: grayscale(100%);
+}
+
+.badgeIcon {
+    font-size: 2rem;
+    margin-right: 16px;
+    color: var(--accent3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.badgeCard.unlocked .badgeIcon {
+    color: #ffd700;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.badgeInfo h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.badgeInfo p {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.3;
+}

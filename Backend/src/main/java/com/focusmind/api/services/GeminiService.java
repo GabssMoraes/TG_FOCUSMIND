@@ -51,7 +51,7 @@ public class GeminiService {
     private MensagemChatRepository mensagemChatRepository;
 
     private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(15))
+            .connectTimeout(Duration.ofSeconds(10))
             .build();
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -68,7 +68,7 @@ public class GeminiService {
             "5. Foco em Ação: Sempre encerre a resposta com uma única pergunta simples ou um convite para ação imediata.\n" +
             "6. Métodos Recomendados: Sugira Pomodoro modificado (ex: 15min foco / 5min pausa), mapas mentais, flashcards, estudos intercalados e recompensas imediatas.";
 
-    public String gerarRespostaComRAG(String mensagemUsuario, Long userId) {
+    public String gerarRespostaComRAG(String mensagemUsuario, Long userId, boolean salvarNoHistorico) {
         if (apiKey == null || apiKey.trim().isEmpty() || apiKey.equals("INSIRA_SUA_CHAVE_AQUI")) {
             return "Erro: A chave da API do Gemini (GEMINI_API_KEY) não foi configurada. Por favor, adicione sua chave em application-secret.properties.";
         }
@@ -78,7 +78,7 @@ public class GeminiService {
             User user = null;
             if (userId != null) {
                 user = userRepository.findById(userId).orElse(null);
-                if (user != null) {
+                if (user != null && salvarNoHistorico) {
                     MensagemChat userMsg = new MensagemChat();
                     userMsg.setUser(user);
                     userMsg.setSender("user");
@@ -171,7 +171,7 @@ public class GeminiService {
             String respostaIA = chamarGeminiChat(contents);
 
             // Salvar resposta da IA no histórico
-            if (user != null) {
+            if (user != null && salvarNoHistorico) {
                 MensagemChat aiMsg = new MensagemChat();
                 aiMsg.setUser(user);
                 aiMsg.setSender("ai");
@@ -224,6 +224,131 @@ public class GeminiService {
         return chamarGeminiChat(contents);
     }
 
+    public String gerarSubTopicos(String materia, int horasDia, java.time.LocalDate dataLimite, int totalHoras) throws Exception {
+        long diasRestantes = java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(), dataLimite);
+
+        String prompt = String.format(
+                "Você é um especialista em currículo e planejamento de estudos. Um estudante precisa aprender '%s'.\n\n" +
+                "Contexto do estudante:\n" +
+                "- Horas disponíveis por dia: %d horas\n" +
+                "- Data limite para concluir: %s (%d dias restantes)\n" +
+                "- Total de horas planejadas para estudar: %d horas\n\n" +
+                "Sua tarefa: Gere uma lista de sub-tópicos essenciais e ordenados logicamente para o estudante dominar '%s' dentro do prazo.\n\n" +
+                "REGRAS IMPORTANTES:\n" +
+                "1. Retorne APENAS um JSON válido, sem nenhum texto antes ou depois.\n" +
+                "2. O JSON deve ser um array de objetos com esta estrutura exata:\n" +
+                "[{\"titulo\": \"Nome do sub-tópico\", \"descricao\": \"Uma frase curta explicando o que é\", \"tempoEstimadoHoras\": 2, \"ordem\": 1}, ...]\n" +
+                "3. Gere entre 6 e 12 sub-tópicos, adequados ao tempo disponível.\n" +
+                "4. A soma de 'tempoEstimadoHoras' deve ser aproximadamente %d horas.\n" +
+                "5. Ordene do mais básico/fundamental ao mais avançado.\n" +
+                "6. Seja específico para '%s', não genérico.",
+                materia, horasDia, dataLimite.toString(), diasRestantes, totalHoras,
+                materia, totalHoras, materia
+        );
+
+        List<Map<String, Object>> contents = List.of(Map.of(
+                "role", "user",
+                "parts", List.of(Map.of("text", prompt))
+        ));
+
+        String resposta = chamarGeminiChat(contents);
+
+        // Limpar possível markdown (```json ... ```) da resposta
+        resposta = resposta.trim();
+        if (resposta.startsWith("```")) {
+            resposta = resposta.replaceAll("^```[a-zA-Z]*\\n?", "").replaceAll("```$", "").trim();
+        }
+
+        return resposta;
+    }
+
+    public String gerarMensagemMotivaional(String nomeEstudante, String materia, int diasRestantes, int horasDia) throws Exception {
+        String prompt = String.format(
+                "Gere uma mensagem motivacional CURTA (máximo 3 frases) e muito acolhedora para %s, que está estudando '%s'.\n" +
+                "Ele tem %d dias até o prazo final e estuda %d horas por dia.\n" +
+                "A mensagem deve ser calorosa, específica para a situação dele, encorajadora e terminar com um incentivo de ação para hoje.\n" +
+                "NÃO use emojis em excesso. Seja autêntico e humano.",
+                nomeEstudante, materia, diasRestantes, horasDia
+        );
+
+        List<Map<String, Object>> contents = List.of(Map.of(
+                "role", "user",
+                "parts", List.of(Map.of("text", prompt))
+        ));
+
+        return chamarGeminiChat(contents);
+    }
+
+    public String gerarQuiz(String materia) throws Exception {
+        String prompt = String.format(
+                "Você é um professor especializado na matéria de '%s'. Crie um quiz rápido de retenção de conhecimento com 3 perguntas de múltipla escolha adequadas para um estudante.\n\n" +
+                "REGRAS IMPORTANTES:\n" +
+                "1. Retorne APENAS um JSON válido, sem nenhum texto antes ou depois (sem markdown como ```json).\n" +
+                "2. O JSON deve ser um array com a seguinte estrutura exata:\n" +
+                "[\n" +
+                "  {\n" +
+                "    \"pergunta\": \"texto da pergunta\",\n" +
+                "    \"opcoes\": [\"opcao 1\", \"opcao 2\", \"opcao 3\", \"opcao 4\"],\n" +
+                "    \"respostaCorreta\": 2,\n" +
+                "    \"explicacao\": \"Breve explicação do porquê a resposta 2 está correta.\"\n" +
+                "  }\n" +
+                "]\n" +
+                "3. O campo 'respostaCorreta' deve ser o índice (0 a 3) da opção correta.",
+                materia
+        );
+
+        List<Map<String, Object>> contents = List.of(Map.of(
+                "role", "user",
+                "parts", List.of(Map.of("text", prompt))
+        ));
+
+        String resposta = chamarGeminiChat(contents);
+        
+        // Limpar possível markdown (```json ... ```) da resposta
+        resposta = resposta.trim();
+        if (resposta.startsWith("```")) {
+            resposta = resposta.replaceAll("^```[a-zA-Z]*\\n?", "").replaceAll("```$", "").trim();
+        }
+
+        return resposta;
+    }
+
+    public String gerarQuizMeta(String descricaoMeta) throws Exception {
+        String prompt = String.format(
+                "O estudante está prestes a concluir uma meta de estudo sobre o seguinte tópico: '%s'.\n" +
+                "Crie um quiz rápido com 5 perguntas de múltipla escolha para validar o conhecimento dele sobre isso.\n\n" +
+                "REGRAS IMPORTANTES:\n" +
+                "1. Retorne APENAS um JSON válido, sem nenhum texto antes ou depois (sem markdown como ```json).\n" +
+                "2. O JSON deve ser um array com a seguinte estrutura exata:\n" +
+                "[\n" +
+                "  {\n" +
+                "    \"pergunta\": \"texto da pergunta\",\n" +
+                "    \"opcoes\": [\"opcao 1\", \"opcao 2\", \"opcao 3\", \"opcao 4\"],\n" +
+                "    \"respostaCorreta\": 2,\n" +
+                "    \"explicacao\": \"Breve explicação do porquê a resposta 2 está correta.\"\n" +
+                "  }\n" +
+                "]\n" +
+                "3. O campo 'respostaCorreta' deve ser o índice (0 a 3) da opção correta.\n" +
+                "4. Gere exatamente 5 perguntas.",
+                descricaoMeta
+        );
+
+        List<Map<String, Object>> contents = List.of(Map.of(
+                "role", "user",
+                "parts", List.of(Map.of("text", prompt))
+        ));
+
+        String resposta = chamarGeminiChat(contents);
+        
+        // Limpar possível markdown (```json ... ```) da resposta
+        resposta = resposta.trim();
+        if (resposta.startsWith("```")) {
+            resposta = resposta.replaceAll("^```[a-zA-Z]*\\n?", "").replaceAll("```$", "").trim();
+        }
+
+        return resposta;
+    }
+
     private List<Double> obterEmbedding(String texto) {
         try {
             String url = embeddingUrl + "?key=" + apiKey;
@@ -269,9 +394,16 @@ public class GeminiService {
                 "parts", List.of(Map.of("text", SYSTEM_PROMPT))
         );
 
+        // Configuração de geração: desativa o "thinking" do Gemini 2.5 Flash
+        // (que é lento por padrão) para respostas mais rápidas no chat
+        Map<String, Object> generationConfig = Map.of(
+                "thinkingConfig", Map.of("thinkingBudget", 0)
+        );
+
         Map<String, Object> requestBody = Map.of(
                 "contents", contents,
-                "systemInstruction", systemInstruction
+                "systemInstruction", systemInstruction,
+                "generationConfig", generationConfig
         );
 
         String requestBodyJson = objectMapper.writeValueAsString(requestBody);
@@ -279,6 +411,7 @@ public class GeminiService {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Content-Type", "application/json")
+                .timeout(Duration.ofSeconds(30))
                 .POST(HttpRequest.BodyPublishers.ofString(requestBodyJson))
                 .build();
 

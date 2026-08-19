@@ -24,6 +24,10 @@ public class AuthService {
         newUser.setName(data.name());
         newUser.setEmail(data.email());
         newUser.setPassword(data.password());
+        newUser.setMateriaEstudo(data.materiaEstudo());
+        newUser.setHorasDiaDisponiveis(data.horasDiaDisponiveis());
+        newUser.setDataLimiteEstudo(data.dataLimiteEstudo());
+        newUser.setTempoTotalEstudoHoras(data.tempoTotalEstudoHoras());
         
         return repository.save(newUser);
     }

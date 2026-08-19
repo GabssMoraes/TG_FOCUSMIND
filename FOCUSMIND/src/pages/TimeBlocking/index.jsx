@@ -18,6 +18,10 @@ export default function TimeBlocking() {
     const [aiSuggestion, setAiSuggestion] = useState('');
     const [isLoadingAi, setIsLoadingAi] = useState(false);
 
+    // Estado para Drag-and-Drop e Edição
+    const [draggedItemIdx, setDraggedItemIdx] = useState(null);
+    const [editingIdx, setEditingIdx] = useState(null);
+
     const loadBlocks = async () => {
         if (!userId) return;
         try {
@@ -42,7 +46,6 @@ export default function TimeBlocking() {
             return;
         }
 
-        // Criar bloco localmente
         const newBlock = {
             materia,
             diaSemana,
@@ -50,13 +53,83 @@ export default function TimeBlocking() {
             horaFim
         };
 
-        setBlocks(prev => [...prev, newBlock]);
+        if (editingIdx !== null) {
+            // Editando bloco existente
+            setBlocks(prev => {
+                const updated = [...prev];
+                updated[editingIdx] = newBlock;
+                return updated.sort((a, b) => a.horaInicio.localeCompare(b.horaInicio));
+            });
+            setEditingIdx(null);
+            toast.success("Bloco atualizado localmente!");
+        } else {
+            // Criando novo bloco localmente
+            setBlocks(prev => {
+                const updated = [...prev, newBlock];
+                return updated.sort((a, b) => a.horaInicio.localeCompare(b.horaInicio));
+            });
+            toast.success("Bloco adicionado localmente. Lembre-se de salvar!");
+        }
+
         setMateria('');
-        toast.success("Bloco adicionado localmente. Lembre-se de salvar!");
+    };
+
+    const handleEditBlockLocal = (indexToEdit) => {
+        const block = blocks[indexToEdit];
+        setMateria(block.materia);
+        setDiaSemana(block.diaSemana);
+        setHoraInicio(block.horaInicio);
+        setHoraFim(block.horaFim);
+        setEditingIdx(indexToEdit);
     };
 
     const handleDeleteBlockLocal = (indexToDelete) => {
         setBlocks(prev => prev.filter((_, idx) => idx !== indexToDelete));
+        if (editingIdx === indexToDelete) {
+            setEditingIdx(null);
+            setMateria('');
+        }
+    };
+
+    // ── Drag and Drop Handlers ──
+    const handleDragStart = (e, originalIdx) => {
+        setDraggedItemIdx(originalIdx);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', originalIdx);
+        setTimeout(() => {
+            if (e.target && e.target.classList) {
+                e.target.classList.add(styles.dragging);
+            }
+        }, 0);
+    };
+
+    const handleDragEnd = (e) => {
+        setDraggedItemIdx(null);
+        if (e.target && e.target.classList) {
+            e.target.classList.remove(styles.dragging);
+        }
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault(); // Necessário para permitir o drop
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (e, targetDay) => {
+        e.preventDefault();
+        if (draggedItemIdx === null) return;
+
+        setBlocks(prev => {
+            const newBlocks = [...prev];
+            // Atualiza o dia da semana do bloco movido
+            newBlocks[draggedItemIdx] = {
+                ...newBlocks[draggedItemIdx],
+                diaSemana: targetDay
+            };
+            // Ordena os blocos pelo horário de início para ficar organizado na coluna
+            return newBlocks.sort((a, b) => a.horaInicio.localeCompare(b.horaInicio));
+        });
+        setDraggedItemIdx(null);
     };
 
     const handleSaveBlocks = async () => {
@@ -124,26 +197,49 @@ export default function TimeBlocking() {
                             {DIAS_SEMANA.map(day => {
                                 const dayBlocks = blocks.filter(b => b.diaSemana === day);
                                 return (
-                                    <div key={day} className={styles.dayColumn}>
+                                    <div 
+                                        key={day} 
+                                        className={styles.dayColumn}
+                                        onDragOver={handleDragOver}
+                                        onDrop={(e) => handleDrop(e, day)}
+                                    >
                                         <div className={styles.dayName}>{day}</div>
                                         {dayBlocks.length === 0 ? (
-                                            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)', textAlign: 'center', padding: '10px 0' }}>
-                                                Livre
+                                            <div className={styles.emptyColumn}>
+                                                Arraste para cá
                                             </div>
                                         ) : (
                                             dayBlocks.map((b, idx) => {
                                                 // Encontrar o index real no array original
                                                 const originalIdx = blocks.findIndex(original => original === b);
                                                 return (
-                                                    <div key={idx} className={styles.blockItem}>
+                                                    <div 
+                                                        key={idx} 
+                                                        className={styles.blockItem}
+                                                        draggable
+                                                        onDragStart={(e) => handleDragStart(e, originalIdx)}
+                                                        onDragEnd={handleDragEnd}
+                                                    >
                                                         <div className={styles.blockTime}>{b.horaInicio} - {b.horaFim}</div>
                                                         <div className={styles.blockSubject}>{b.materia}</div>
-                                                        <button 
-                                                            className={styles.btnDeleteBlock}
-                                                            onClick={() => handleDeleteBlockLocal(originalIdx)}
-                                                        >
-                                                            <Icon name="trash" />
-                                                        </button>
+                                                        
+                                                        <div className={styles.blockActions}>
+                                                            <button 
+                                                                className={styles.btnActionBlock}
+                                                                onClick={() => handleEditBlockLocal(originalIdx)}
+                                                                title="Editar"
+                                                            >
+                                                                <Icon name="pen" />
+                                                            </button>
+                                                            <button 
+                                                                className={styles.btnActionBlock}
+                                                                style={{ color: '#ff6b6b' }}
+                                                                onClick={() => handleDeleteBlockLocal(originalIdx)}
+                                                                title="Excluir"
+                                                            >
+                                                                <Icon name="trash" />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 );
                                             })
@@ -188,8 +284,20 @@ export default function TimeBlocking() {
                             />
 
                             <button type="submit" className={styles.btnPrimary}>
-                                <Icon name="plus" /> Bloco
-                            </button>
+                                        <Icon name={editingIdx !== null ? "pen" : "plus"} /> {editingIdx !== null ? "Atualizar" : "Bloco"}
+                                    </button>
+                                    {editingIdx !== null && (
+                                        <button 
+                                            type="button" 
+                                            className={styles.btnSecondary} 
+                                            onClick={() => {
+                                                setEditingIdx(null);
+                                                setMateria('');
+                                            }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    )}
                         </form>
                     </div>
 

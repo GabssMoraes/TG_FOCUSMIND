@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../Icon';
+import StreakModal from '../StreakModal';
 import styles from './styles.module.css';
 
 const PAGE_TITLES = {
@@ -12,6 +13,8 @@ const PAGE_TITLES = {
     '/chat':         'FocusBot — IA',
     '/loja':         'Loja de Recompensas',
     '/profile':      'Meu Perfil',
+    '/quiz':         'Quiz Diário',
+    '/jornada':      'Jornada',
 };
 
 const NAV = [
@@ -19,6 +22,8 @@ const NAV = [
     { to: '/timer',        icon: 'timer', label: 'Temporizador', tooltip: 'Temporizador Pomodoro para foco' },
     { to: '/timeblocking', icon: 'calendar', label: 'Grade Horária', tooltip: 'Planejamento semanal de tempo' },
     { to: '/revisao',      icon: 'review', label: 'Revisão Semanal', tooltip: 'Autoavaliação e reflexão semanal' },
+    { to: '/quiz',         icon: 'brain', label: 'Quiz Diário', tooltip: 'Teste seus conhecimentos gerados por IA' },
+    { to: '/jornada',      icon: 'star', label: 'Jornada', tooltip: 'Acompanhe seu Modo História e mapa visual' },
     { to: '/chat',         icon: 'bot', label: 'FocusBot', tooltip: 'Conversa com inteligência artificial' },
     { to: '/loja',         icon: 'shop', label: 'Loja', tooltip: 'Resgatar recompensas com moedas' },
 ];
@@ -29,6 +34,7 @@ export default function AppLayout({ children }) {
     const { userId, logout } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [profile, setProfile] = useState({ pontos: 0, streakDias: 0 });
+    const [showStreakModal, setShowStreakModal] = useState(false);
 
     const pageTitle = PAGE_TITLES[location.pathname] || 'FocusMind';
 
@@ -37,7 +43,28 @@ export default function AppLayout({ children }) {
         fetch(`http://localhost:8080/api/usuarios/${userId}/perfil`)
             .then(res => res.ok ? res.json() : null)
             .then(data => {
-                if (data) setProfile({ pontos: data.pontos, streakDias: data.streakDias });
+                if (data) {
+                    setProfile({ pontos: data.pontos, streakDias: data.streakDias });
+                    
+                    // Lógica para abrir o modal automaticamente
+                    const todayStr = new Date().toLocaleDateString();
+                    const lastDate = localStorage.getItem('lastStreakPopupDate');
+                    const lastStreakCount = parseInt(localStorage.getItem('lastStreakCount') || '0', 10);
+
+                    // Abre se for um novo dia e a streak > 0
+                    if (data.streakDias > 0 && lastDate !== todayStr) {
+                        setShowStreakModal(true);
+                        localStorage.setItem('lastStreakPopupDate', todayStr);
+                    } 
+                    // Abre se o usuário tinha uma streak e perdeu ela (caiu pra 0)
+                    else if (data.streakDias === 0 && lastStreakCount > 0) {
+                        setShowStreakModal(true);
+                        localStorage.setItem('lastStreakPopupDate', todayStr);
+                    }
+
+                    // Salva a streak atual para checar no futuro se o usuário a perdeu
+                    localStorage.setItem('lastStreakCount', data.streakDias.toString());
+                }
             })
             .catch(console.error);
     }, [userId, location.pathname]);
@@ -89,7 +116,7 @@ export default function AppLayout({ children }) {
 
                 {/* Footer com stats + logout */}
                 <div className={styles.sidebarFooter}>
-                    <div className={styles.statsChip}>
+                    <div className={styles.statsChip} style={{ cursor: 'pointer' }} onClick={() => setShowStreakModal(true)}>
                         <span><Icon name="fire" style={{ color: '#ff6b6b', marginRight: '6px' }} /> Sequência</span>
                         <span className={styles.statsChipMuted}>{profile.streakDias} dias</span>
                     </div>
@@ -116,14 +143,6 @@ export default function AppLayout({ children }) {
                     </button>
                     <span className={styles.topbarTitle}>{pageTitle}</span>
 
-                    <div className={styles.topbarStats}>
-                        <span className={`${styles.badge} ${styles.badgeStreak}`}>
-                            <Icon name="fire" style={{ color: '#ff6b6b', marginRight: '4px' }} /> {profile.streakDias}d
-                        </span>
-                        <span className={`${styles.badge} ${styles.badgeCoins}`}>
-                            <Icon name="coins" style={{ color: '#f7c59f', marginRight: '4px' }} /> {profile.pontos}
-                        </span>
-                    </div>
                 </div>
 
                 {/* Page content */}
@@ -132,6 +151,10 @@ export default function AppLayout({ children }) {
                 </div>
             </div>
 
+            {/* Modal de Streak */}
+            {showStreakModal && (
+                <StreakModal streak={profile.streakDias} onClose={() => setShowStreakModal(false)} />
+            )}
         </div>
     );
 }

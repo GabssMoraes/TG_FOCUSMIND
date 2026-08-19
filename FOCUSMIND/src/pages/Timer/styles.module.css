@@ -52,6 +52,13 @@ h1 {
     display: block;
     animation: fadeIn .35s ease;
     min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    /* Fundo de céu noturno */
+    background:
+        radial-gradient(ellipse at 70% 20%, rgba(60, 30, 120, 0.35) 0%, transparent 55%),
+        radial-gradient(ellipse at 20% 70%, rgba(10, 40, 100, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 50%, rgba(5, 8, 20, 1) 0%, rgba(8, 12, 28, 1) 100%);
 }
 
 @keyframes fadeIn {
@@ -112,6 +119,8 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
+    position: relative;
+    z-index: 1;
 }
 
 .section {
@@ -169,45 +178,56 @@ h1 {
 }
 
 .big-timer {
-    width: 240px;
-    height: 240px;
+    width: 220px;
+    height: 220px;
     border-radius: 50%;
-    border: 4px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    margin: 40px auto;
+    margin: 30px auto;
     position: relative;
-    background: var(--card);
+    /* Anel de progresso dinâmico via inline style */
+    padding: 8px;
 }
 
-.big-timer::before {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    background: conic-gradient(var(--accent) 65%, transparent 65%);
-    z-index: -1;
-}
+/* Removido o ::before estático — o anel agora é controlado via JS inline style */
 
 .big-timer-num {
     font-family: 'Syne', sans-serif;
     font-size: 3.2rem;
     font-weight: 800;
-    line-height: 1.1;
-    margin-bottom: 4px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    text-shadow: 0 0 30px rgba(124, 108, 250, 0.6);
 }
 
 .big-timer-label {
-    color: var(--muted);
-    font-size: .85rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: .8rem;
+    margin-top: 6px;
+    letter-spacing: 0.05em;
+}
+
+/* Container interno — disco escuro que "recorta" o anel colorido */
+.timer-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: calc(100% - 16px);
+    height: calc(100% - 16px);
+    border-radius: 50%;
+    background: radial-gradient(circle at center, #161925 60%, #0e1120 100%);
+    position: absolute;
+    top: 8px;
+    left: 8px;
 }
 
 .timer-controls {
     display: flex;
     gap: 14px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
 .stats-grid {
@@ -238,3 +258,35 @@ h1 {
     font-size: .8rem;
     color: var(--muted);
 }
+
+/* ── CONSTELAÇÃO FULL SCREEN ── */
+.fullscreenConstellation {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 2s ease;
+}
+
+.constellationBadge {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #c0b8f7;
+    letter-spacing: 0.08em;
+    background: rgba(124, 108, 250, 0.12);
+    border: 1px solid rgba(124, 108, 250, 0.25);
+    padding: 5px 14px;
+    border-radius: 50px;
+    transition: opacity 1.5s ease;
+}
+
+@keyframes twinkle {
+    0%   { opacity: 0.15; }
+    100% { opacity: 0.9; }
+}
+
