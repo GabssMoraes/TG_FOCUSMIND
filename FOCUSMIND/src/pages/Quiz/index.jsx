@@ -37,7 +37,7 @@ export default function Quiz() {
                 const data = JSON.parse(text);
                 setQuizData(data);
             } else {
-                if (text.includes("429") || text.includes("RESOURCE_EXHAUSTED")) {
+                if (text.includes("429") || text.includes("RESOURCE_EXHAUSTED") || text.includes("503") || text.includes("UNAVAILABLE")) {
                     setErrorMessage("Ufa! O FocusBot analisou muitos dados agora pouco e atingiu o limite da API. Respire fundo e tente novamente em 1 minuto! 🧘");
                 } else {
                     setErrorMessage("Erro ao gerar quiz. Verifique se você cadastrou sua matéria e tente novamente.");

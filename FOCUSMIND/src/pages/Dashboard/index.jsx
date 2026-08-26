@@ -4,6 +4,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import Icon from '../../components/Icon';
 import MetaQuizModal from '../../components/MetaQuizModal';
+import DailyCheckIn from '../../components/DailyCheckIn';
+import FocusPet from '../../components/FocusPet';
+import WeeklyChallenges from '../../components/WeeklyChallenges';
 import styles from './styles.module.css';
 import { playSuccessSound, playChestSound } from '../../utils/audioUtils';
 
@@ -20,6 +23,16 @@ export default function Dashboard() {
     const [isOpeningChest, setIsOpeningChest] = useState(false);
     const [chestReward, setChestReward] = useState(null);
     const [metaToComplete, setMetaToComplete] = useState(null);
+    const [sessionsToday, setSessionsToday] = useState(0);
+    const [sessionsWeek, setSessionsWeek] = useState(0);
+    const [metasDoneWeek, setMetasDoneWeek] = useState(0);
+
+    // Check-in diário: aparece uma vez por dia
+    const [showCheckIn, setShowCheckIn] = useState(() => {
+        const lastCheckIn = localStorage.getItem('@FocusMind:lastCheckIn');
+        const today = new Date().toISOString().split('T')[0];
+        return lastCheckIn !== today;
+    });
 
     const loadData = async () => {
         if (!userId) return;
@@ -44,14 +57,26 @@ export default function Dashboard() {
             if (res.ok) {
                 const data = await res.json();
                 const hojeStr = new Date().toISOString().split('T')[0];
+                // Pega segunda-feira desta semana
+                const now = new Date();
+                const monday = new Date(now);
+                monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+                const mondayStr = monday.toISOString().split('T')[0];
+
                 let totalMin = 0;
+                let todaySess = 0;
+                let weekSess = 0;
                 data.forEach(s => {
                     if (s.foiConcluida && s.data.startsWith(hojeStr) && s.tempoReal) {
                         const parts = s.tempoReal.split(':');
                         totalMin += parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+                        todaySess++;
                     }
+                    if (s.foiConcluida && s.data >= mondayStr) weekSess++;
                 });
                 setTotalFocusTime(totalMin >= 60 ? `${Math.floor(totalMin / 60)}h ${totalMin % 60}m` : `${totalMin}m`);
+                setSessionsToday(todaySess);
+                setSessionsWeek(weekSess);
             }
         } catch (e) { console.error(e); }
     };
@@ -87,7 +112,8 @@ export default function Dashboard() {
             
             if (response.ok) {
                 const data = await response.json();
-                if (data.resposta && data.resposta.includes("429") && data.resposta.includes("Quota exceeded")) {
+                const respostaString = data.resposta || "";
+                if (respostaString.includes("429") || respostaString.includes("503") || respostaString.includes("Quota exceeded") || respostaString.includes("Ocorreu um erro")) {
                     setAiSuggestion("Estou analisando muitos dados agora. Respire fundo e tente novamente em alguns segundos!");
                 } else {
                     setAiSuggestion(data.resposta);
@@ -165,6 +191,20 @@ export default function Dashboard() {
         tasks.filter(t => t.status === 'C').length >= 10
     ].filter(Boolean).length;
 
+    const metasDoneTotal = tasks.filter(t => t.status === 'C').length;
+    const hasFocusMode = localStorage.getItem(`@FocusMind:unlockedFocusMode:${userId}`) === 'true';
+
+    const handleCheckInStart = (minutes) => {
+        localStorage.setItem('@FocusMind:lastCheckIn', new Date().toISOString().split('T')[0]);
+        setShowCheckIn(false);
+        navigate('/timer');
+    };
+
+    const handleCheckInSkip = () => {
+        localStorage.setItem('@FocusMind:lastCheckIn', new Date().toISOString().split('T')[0]);
+        setShowCheckIn(false);
+    };
+
     const handleOpenChest = async () => {
         if (isOpeningChest) return;
         setIsOpeningChest(true);
@@ -209,71 +249,64 @@ export default function Dashboard() {
     return (
         <div className={styles.page}>
 
-            {/* Hero / Saudação */}
-            <div className={styles.hero}>
-                <div className={styles.heroLeft}>
-                    <p className={styles.heroGreeting}>{greeting} 👋</p>
-                    <h1 className={styles.heroName}>{profile.name}</h1>
-                    <p className={styles.heroSubtitle}>
+            {/* Check-in Diário */}
+            {showCheckIn && (
+                <DailyCheckIn
+                    activeTasks={activeTasks}
+                    onStart={handleCheckInStart}
+                    onSkip={handleCheckInSkip}
+                />
+            )}
+
+            {/* ── Barra compacta: saudação + stats inline ── */}
+            <div className={styles.topBar}>
+                <div className={styles.topBarLeft}>
+                    <h1 className={styles.greeting}>{greeting}, <span>{profile.name}</span></h1>
+                    <p className={styles.greetingSub}>
                         {activeTasks.length > 0
-                            ? `Você tem ${activeTasks.length} tarefa${activeTasks.length !== 1 ? 's' : ''} ativa${activeTasks.length !== 1 ? 's' : ''} para hoje.`
-                            : 'Nenhuma meta ativa. Que tal definir uma nova?'}
+                            ? `${activeTasks.length} meta${activeTasks.length !== 1 ? 's' : ''} ativa${activeTasks.length !== 1 ? 's' : ''} para hoje`
+                            : 'Nenhuma meta ativa'}
                     </p>
                 </div>
-                <div className={styles.heroRight}>
-                    <div className={styles.heroStatChip}>
-                        <Icon name="fire" style={{ color: profile.streakDias > 0 ? '#ff6b6b' : '#555' }} />
-                        <span>{profile.streakDias} dias de sequência</span>
+                <div className={styles.topBarStats}>
+                    <div className={styles.miniStat}>
+                        <Icon name="timer" style={{ color: '#4ecdc4', fontSize: '0.85rem' }} />
+                        <span className={styles.miniStatVal}>{totalFocusTime}</span>
+                        <span className={styles.miniStatLabel}>foco</span>
                     </div>
-                    <div className={styles.progressRing}>
-                        <svg viewBox="0 0 64 64" className={styles.progressSvg}>
-                            <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6"/>
+                    <div className={styles.miniStatDivider} />
+                    <div className={styles.miniStat}>
+                        <Icon name="fire" style={{ color: profile.streakDias > 0 ? '#ff6b6b' : '#555', fontSize: '0.85rem' }} />
+                        <span className={styles.miniStatVal}>{profile.streakDias}</span>
+                        <span className={styles.miniStatLabel}>dias</span>
+                    </div>
+                    <div className={styles.miniStatDivider} />
+                    <div className={styles.miniStat}>
+                        <Icon name="coins" style={{ color: '#f7c59f', fontSize: '0.85rem' }} />
+                        <span className={styles.miniStatVal}>{profile.pontos}</span>
+                        <span className={styles.miniStatLabel}>moedas</span>
+                    </div>
+                    <div className={styles.miniStatDivider} />
+                    <div className={styles.miniStat} onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+                        <Icon name="trophy" style={{ color: '#ffd700', fontSize: '0.85rem' }} />
+                        <span className={styles.miniStatVal}>{achievementsCount}</span>
+                        <span className={styles.miniStatLabel}>conquistas</span>
+                    </div>
+                    {/* Progress ring compacto */}
+                    <div className={styles.miniRing}>
+                        <svg viewBox="0 0 36 36" className={styles.miniRingSvg}>
+                            <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3"/>
                             <circle
-                                cx="32" cy="32" r="28" fill="none"
-                                stroke="#7c6cfa" strokeWidth="6"
+                                cx="18" cy="18" r="15" fill="none"
+                                stroke="#7c6cfa" strokeWidth="3"
                                 strokeLinecap="round"
-                                strokeDasharray={`${2 * Math.PI * 28}`}
-                                strokeDashoffset={`${2 * Math.PI * 28 * (1 - completionRate / 100)}`}
+                                strokeDasharray={`${2 * Math.PI * 15}`}
+                                strokeDashoffset={`${2 * Math.PI * 15 * (1 - completionRate / 100)}`}
                                 style={{ transform: 'rotate(-90deg)', transformOrigin: 'center', transition: 'stroke-dashoffset 0.8s ease' }}
                             />
                         </svg>
-                        <div className={styles.progressLabel}>
-                            <span className={styles.progressVal}>{completionRate}%</span>
-                            <span className={styles.progressSub}>metas</span>
-                        </div>
+                        <span className={styles.miniRingVal}>{completionRate}%</span>
                     </div>
-                </div>
-            </div>
-
-            {/* Stats row */}
-            <div className={styles.statsRow}>
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon} style={{ background: 'rgba(78,205,196,.12)' }}>
-                        <Icon name="timer" style={{ color: '#4ecdc4' }} />
-                    </div>
-                    <div className={styles.statVal}>{totalFocusTime}</div>
-                    <div className={styles.statLabel}>Foco hoje</div>
-                </div>
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon} style={{ background: 'rgba(247,197,159,.12)' }}>
-                        <Icon name="coins" style={{ color: '#f7c59f' }} />
-                    </div>
-                    <div className={styles.statVal}>{profile.pontos}</div>
-                    <div className={styles.statLabel}>Moedas</div>
-                </div>
-                <div className={styles.statCard} onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
-                    <div className={styles.statIcon} style={{ background: 'rgba(255,215,0,.12)' }}>
-                        <Icon name="trophy" style={{ color: '#ffd700' }} />
-                    </div>
-                    <div className={styles.statVal}>{achievementsCount}</div>
-                    <div className={styles.statLabel}>Conquistas</div>
-                </div>
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon} style={{ background: 'rgba(124,108,250,.12)' }}>
-                        <Icon name="check" style={{ color: '#7c6cfa' }} />
-                    </div>
-                    <div className={styles.statVal}>{completedCount}/{totalTasks}</div>
-                    <div className={styles.statLabel}>Concluídas</div>
                 </div>
             </div>
 
@@ -305,86 +338,114 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* Grid principal */}
-            <div className={styles.mainGrid}>
+            {/* ── Layout principal: 2 colunas ── */}
+            <div className={styles.layout}>
 
-                {/* Metas */}
-                <div className={styles.card}>
-                    <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>
-                            <Icon name="target" style={{ marginRight: '8px', color: '#7c6cfa' }} />
-                            Metas de Estudo
-                        </h3>
-                        <span className={styles.taskBadge}>{activeTasks.length} ativas</span>
-                    </div>
+                {/* Coluna esquerda: Metas + FocusBot */}
+                <div className={styles.colMain}>
 
-                    <form onSubmit={handleAddTask} className={styles.addTaskForm}>
-                        <input
-                            type="text"
-                            className={styles.taskInput}
-                            placeholder="ex: Ler capítulo 3 de Cálculo..."
-                            value={newTaskDesc}
-                            onChange={(e) => setNewTaskDesc(e.target.value)}
-                        />
-                        <button type="submit" className={styles.btnAdd}><Icon name="plus" /></button>
-                    </form>
+                    {/* Metas de Estudo */}
+                    <div className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <h3 className={styles.cardTitle}>
+                                <Icon name="target" style={{ marginRight: '8px', color: '#7c6cfa' }} />
+                                Metas de Estudo
+                            </h3>
+                            <span className={styles.taskBadge}>{activeTasks.length} ativas</span>
+                        </div>
 
-                    <div className={styles.taskList}>
-                        {tasks.length === 0 ? (
-                            <div className={styles.emptyState}>
-                                <Icon name="target" style={{ fontSize: '2rem', opacity: 0.3, marginBottom: '8px' }} />
-                                <p>Nenhuma meta ainda. Defina uma acima!</p>
-                            </div>
-                        ) : (
-                            tasks.map((task) => (
-                                <div
-                                    key={task.id}
-                                    className={`${styles.taskItem} ${task.status === 'C' ? styles.taskDone : ''}`}
-                                >
-                                    <div className={styles.taskBar} style={{ background: task.status === 'C' ? '#4ecdc4' : '#7c6cfa' }} />
-                                    <span className={styles.taskDesc}>{task.descricao}</span>
-                                    <div className={styles.taskActions}>
-                                        {task.status !== 'C' && (
-                                            <button className={styles.btnComplete} onClick={() => initiateCompleteTask(task)}>
-                                                <Icon name="check" />
-                                            </button>
-                                        )}
-                                        <button className={styles.btnDelete} onClick={() => handleDeleteTask(task.id)}>
-                                            <Icon name="delete" />
-                                        </button>
-                                    </div>
+                        <form onSubmit={handleAddTask} className={styles.addTaskForm}>
+                            <input
+                                type="text"
+                                className={styles.taskInput}
+                                placeholder="ex: Ler capítulo 3 de Cálculo..."
+                                value={newTaskDesc}
+                                onChange={(e) => setNewTaskDesc(e.target.value)}
+                            />
+                            <button type="submit" className={styles.btnAdd}><Icon name="plus" /></button>
+                        </form>
+
+                        <div className={styles.taskList}>
+                            {tasks.length === 0 ? (
+                                <div className={styles.emptyState}>
+                                    <Icon name="target" style={{ fontSize: '2rem', opacity: 0.3, marginBottom: '8px' }} />
+                                    <p>Nenhuma meta ainda. Defina uma acima!</p>
                                 </div>
-                            ))
-                        )}
+                            ) : (
+                                tasks.map((task) => (
+                                    <div
+                                        key={task.id}
+                                        className={`${styles.taskItem} ${task.status === 'C' ? styles.taskDone : ''}`}
+                                    >
+                                        <div className={styles.taskBar} style={{ background: task.status === 'C' ? '#4ecdc4' : '#7c6cfa' }} />
+                                        <span className={styles.taskDesc}>{task.descricao}</span>
+                                        <div className={styles.taskActions}>
+                                            {task.status !== 'C' && (
+                                                <button className={styles.btnComplete} onClick={() => initiateCompleteTask(task)}>
+                                                    <Icon name="check" />
+                                                </button>
+                                            )}
+                                            <button className={styles.btnDelete} onClick={() => handleDeleteTask(task.id)}>
+                                                <Icon name="delete" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* FocusBot */}
+                    <div className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <h3 className={styles.cardTitle}>
+                                <Icon name="bot" style={{ marginRight: '8px', color: '#7c6cfa' }} />
+                                FocusBot
+                            </h3>
+                            <span className={styles.aiPill}>IA</span>
+                        </div>
+
+                        <div className={styles.aiBubble}>
+                            {isLoadingSuggestion ? (
+                                <div className={styles.loadingDots}>
+                                    <span></span><span></span><span></span>
+                                </div>
+                            ) : (
+                                <p>
+                                    {(aiSuggestion || "Aguardando dados para gerar sugestão...")
+                                        .split(/(\*\*.*?\*\*)/g)
+                                        .map((part, index) => {
+                                            if (part.startsWith('**') && part.endsWith('**')) {
+                                                return <strong key={index} style={{ color: '#fff' }}>{part.slice(2, -2)}</strong>;
+                                            }
+                                            return part;
+                                        })}
+                                </p>
+                            )}
+                        </div>
+
+                        <button className={styles.btnChat} onClick={() => navigate('/chat')}>
+                            <Icon name="bot" style={{ marginRight: '6px' }} />
+                            Abrir chat completo
+                        </button>
                     </div>
                 </div>
 
-                {/* FocusBot */}
-                <div className={styles.card}>
-                    <div className={styles.cardHeader}>
-                        <h3 className={styles.cardTitle}>
-                            <Icon name="bot" style={{ marginRight: '8px', color: '#7c6cfa' }} />
-                            FocusBot
-                        </h3>
-                        <span className={styles.aiPill}>IA</span>
-                    </div>
-
-                    <div className={styles.aiBubble}>
-                        {isLoadingSuggestion ? (
-                            <div className={styles.loadingDots}>
-                                <span></span><span></span><span></span>
-                            </div>
-                        ) : (
-                            <p>{aiSuggestion || "Aguardando dados para gerar sugestão..."}</p>
-                        )}
-                    </div>
-
-                    <button className={styles.btnChat} onClick={() => navigate('/chat')}>
-                        <Icon name="bot" style={{ marginRight: '6px' }} />
-                        Abrir chat completo
-                    </button>
+                {/* Coluna direita: Pet + Desafios */}
+                <div className={styles.colSide}>
+                    <FocusPet
+                        streakDias={profile.streakDias}
+                        pontos={profile.pontos}
+                        sessionsToday={sessionsToday}
+                        hasUnlockedFocusMode={hasFocusMode}
+                    />
+                    <WeeklyChallenges
+                        userId={userId}
+                        sessionCount={sessionsWeek}
+                        metasDone={metasDoneTotal}
+                        streakDias={profile.streakDias}
+                    />
                 </div>
-
             </div>
 
             {/* Modal de Quiz para Meta */}

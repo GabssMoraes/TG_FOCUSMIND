@@ -1,0 +1,290 @@
+/* Floating Action Button */
+.fab {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c6cfa, #5a4de0);
+    border: none;
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(124, 108, 250, 0.4);
+    transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 1200;
+}
+
+.fab:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 12px 32px rgba(124, 108, 250, 0.5);
+}
+
+.fab:active { transform: scale(0.95); }
+
+.fabOpen {
+    background: linear-gradient(135deg, #ff6b6b, #e05a5a);
+    box-shadow: 0 8px 24px rgba(255, 107, 107, 0.4);
+}
+
+/* Backdrop (mobile) */
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1190;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Drawer */
+.drawer {
+    position: fixed;
+    bottom: 90px;
+    right: 28px;
+    width: 360px;
+    max-height: 70vh;
+    background: linear-gradient(160deg, #1a1630 0%, #13101e 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(124, 108, 250, 0.1);
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    /* Animação de entrada */
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.drawerOpen {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+
+/* Drawer header */
+.drawerHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+}
+
+.drawerTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: #fff;
+}
+
+.shortcut {
+    background: rgba(255,255,255,0.07);
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-size: 0.65rem;
+    color: var(--muted);
+    font-family: monospace;
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tabBtn {
+    background: rgba(255,255,255,0.05);
+    border: none;
+    border-radius: 8px;
+    padding: 4px 10px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: all 0.2s;
+}
+
+.tabBtn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+
+.tabActive {
+    background: rgba(124, 108, 250, 0.15) !important;
+    color: #a89cf7 !important;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.closeBtn:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+
+/* Editor */
+.editorSection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.textarea {
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    resize: none;
+    transition: border-color 0.2s;
+}
+
+.textarea:focus {
+    outline: none;
+    border-color: rgba(124, 108, 250, 0.4);
+}
+
+.textarea::placeholder { color: rgba(255,255,255,0.25); }
+
+.editorFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.autoSaveLabel {
+    font-size: 0.72rem;
+    color: #4ecdc4;
+    font-weight: 600;
+}
+
+.btnSave {
+    background: rgba(124, 108, 250, 0.15);
+    border: 1px solid rgba(124, 108, 250, 0.3);
+    border-radius: 10px;
+    padding: 7px 14px;
+    color: #a89cf7;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.btnSave:hover:not(:disabled) { background: rgba(124, 108, 250, 0.25); }
+.btnSave:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.tipRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.3);
+    padding: 0 4px;
+}
+
+.tipRow kbd {
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.5);
+}
+
+/* Notes list */
+.notesList {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+    flex: 1;
+    padding: 8px;
+}
+
+.notesList::-webkit-scrollbar { width: 4px; }
+.notesList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+.noteCard {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    transition: background 0.2s;
+}
+
+.noteCard:hover { background: rgba(255,255,255,0.05); }
+
+.noteText {
+    font-size: 0.83rem;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 8px;
+    white-space: pre-wrap;
+}
+
+.noteMeta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--muted);
+}
+
+.noteDeleteBtn {
+    background: none;
+    border: none;
+    color: rgba(255,107,107,0.5);
+    cursor: pointer;
+    padding: 2px;
+    font-size: 0.75rem;
+    transition: color 0.2s;
+}
+
+.noteDeleteBtn:hover { color: #ff6b6b; }
+
+.emptyNotes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}

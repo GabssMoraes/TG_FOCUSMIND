@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import Icon from '../../components/Icon';
+import PauseMode from '../../components/PauseMode';
 import styles from './styles.module.css';
 
 // ── Constelações famosas com threshold por estrela (viewBox 0 0 100 60) ──
@@ -209,6 +210,7 @@ export default function Timer() {
 
     // Feedback modal states
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+    const [showPauseMode, setShowPauseMode] = useState(false);
     const [nivelFoco, setNivelFoco] = useState(5);
     const [distracoes, setDistracoes] = useState('');
     const [motivacao, setMotivacao] = useState('Alta');
@@ -396,12 +398,14 @@ export default function Timer() {
             });
 
             if (response.ok) {
-                toast.success("Sessão registrada! +10 moedas ganhas 🪙");
+                toast.success("Sessão registrada! +10 moedas ganhas");
                 setShowFeedbackModal(false);
                 setDistracoes('');
                 setComentario('');
                 setTimerSeconds(currentMode * 60);
                 loadStats();
+                // Exibe modo de pausa guiada
+                setShowPauseMode(true);
             } else {
                 toast.error("Erro ao registrar sessão.");
             }
@@ -703,6 +707,15 @@ export default function Timer() {
                         </button>
                     </div>
                 </div>
+            )}
+
+            {/* Modo Pausa Guiada */}
+            {showPauseMode && (
+                <PauseMode
+                    sessionMinutes={currentMode}
+                    onPauseEnd={() => { setShowPauseMode(false); }}
+                    onSkip={() => setShowPauseMode(false)}
+                />
             )}
         </div>
     );

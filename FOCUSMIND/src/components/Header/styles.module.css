@@ -38,8 +38,17 @@
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.6; transform: scale(0.8); }
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(0.8);
+    }
 }
 
 .navActions {
@@ -50,7 +59,7 @@
 
 .btnGhost {
     background: none;
-    border: 1px solid rgba(255,255,255,0.12);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     color: #e8eaf0;
     padding: 8px 20px;
     border-radius: 8px;
@@ -61,7 +70,7 @@
 }
 
 .btnGhost:hover {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .btnCta {
@@ -75,7 +84,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s, transform 0.15s;
-    box-shadow: 0 4px 16px rgba(124,108,250,0.3);
+    box-shadow: 0 4px 16px rgba(124, 108, 250, 0.3);
 }
 
 .btnCta:hover {

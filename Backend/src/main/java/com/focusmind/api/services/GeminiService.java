@@ -50,6 +50,9 @@ public class GeminiService {
     @Autowired
     private MensagemChatRepository mensagemChatRepository;
 
+    @Autowired
+    private ChatSessionRepository chatSessionRepository;
+
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
@@ -68,7 +71,7 @@ public class GeminiService {
             "5. Foco em Ação: Sempre encerre a resposta com uma única pergunta simples ou um convite para ação imediata.\n" +
             "6. Métodos Recomendados: Sugira Pomodoro modificado (ex: 15min foco / 5min pausa), mapas mentais, flashcards, estudos intercalados e recompensas imediatas.";
 
-    public String gerarRespostaComRAG(String mensagemUsuario, Long userId, boolean salvarNoHistorico) {
+    public String gerarRespostaComRAG(String mensagemUsuario, Long userId, Long sessionId, boolean salvarNoHistorico) {
         if (apiKey == null || apiKey.trim().isEmpty() || apiKey.equals("INSIRA_SUA_CHAVE_AQUI")) {
             return "Erro: A chave da API do Gemini (GEMINI_API_KEY) não foi configurada. Por favor, adicione sua chave em application-secret.properties.";
         }
@@ -76,11 +79,17 @@ public class GeminiService {
         try {
             // Salvar mensagem do usuário no histórico
             User user = null;
+            com.focusmind.api.domain.chat.ChatSession session = null;
             if (userId != null) {
                 user = userRepository.findById(userId).orElse(null);
-                if (user != null && salvarNoHistorico) {
+                if (sessionId != null) {
+                    session = chatSessionRepository.findById(sessionId).orElse(null);
+                }
+                
+                if (user != null && salvarNoHistorico && session != null) {
                     MensagemChat userMsg = new MensagemChat();
                     userMsg.setUser(user);
+                    userMsg.setSession(session);
                     userMsg.setSender("user");
                     userMsg.setTexto(mensagemUsuario);
                     mensagemChatRepository.save(userMsg);
@@ -142,8 +151,8 @@ public class GeminiService {
 
             // 3. Montar Histórico de Conversas (Gemini contents)
             List<Map<String, Object>> contents = new ArrayList<>();
-            if (userId != null) {
-                List<MensagemChat> history = mensagemChatRepository.findByUserIdOrderByDataHoraAsc(userId);
+            if (session != null) {
+                List<MensagemChat> history = mensagemChatRepository.findBySessionIdOrderByDataHoraAsc(session.getId());
                 // Pegar as últimas 10 mensagens (menos a que acabamos de salvar)
                 int start = Math.max(0, history.size() - 11);
                 int limit = Math.min(history.size() - 1, start + 10);
@@ -171,9 +180,10 @@ public class GeminiService {
             String respostaIA = chamarGeminiChat(contents);
 
             // Salvar resposta da IA no histórico
-            if (user != null && salvarNoHistorico) {
+            if (user != null && salvarNoHistorico && session != null) {
                 MensagemChat aiMsg = new MensagemChat();
                 aiMsg.setUser(user);
+                aiMsg.setSession(session);
                 aiMsg.setSender("ai");
                 aiMsg.setTexto(respostaIA);
                 mensagemChatRepository.save(aiMsg);
@@ -411,7 +421,7 @@ public class GeminiService {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(30))
+                .timeout(Duration.ofSeconds(60))
                 .POST(HttpRequest.BodyPublishers.ofString(requestBodyJson))
                 .build();
 

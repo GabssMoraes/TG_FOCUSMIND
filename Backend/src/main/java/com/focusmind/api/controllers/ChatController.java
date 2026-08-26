@@ -22,17 +22,55 @@ public class ChatController {
     @Autowired
     private com.focusmind.api.repositories.UserRepository userRepository;
 
+    @Autowired
+    private com.focusmind.api.repositories.ChatSessionRepository chatSessionRepository;
+
+    @GetMapping("/sessoes")
+    public ResponseEntity<List<com.focusmind.api.domain.chat.ChatSession>> obterSessoes(@RequestParam Long userId) {
+        return ResponseEntity.ok(chatSessionRepository.findByUserIdOrderByDataCriacaoDesc(userId));
+    }
+
     @GetMapping("/historico")
-    public ResponseEntity<List<MensagemChat>> obterHistorico(@RequestParam Long userId) {
-        List<MensagemChat> historico = mensagemChatRepository.findByUserIdOrderByDataHoraAsc(userId);
+    public ResponseEntity<List<MensagemChat>> obterHistorico(@RequestParam Long sessionId) {
+        List<MensagemChat> historico = mensagemChatRepository.findBySessionIdOrderByDataHoraAsc(sessionId);
         return ResponseEntity.ok(historico);
+    }
+
+    @DeleteMapping("/sessoes/{id}")
+    public ResponseEntity<String> deletarSessao(@PathVariable Long id) {
+        try {
+            chatSessionRepository.deleteById(id);
+            return ResponseEntity.ok("Sessão deletada com sucesso.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erro ao deletar sessão: " + e.getMessage());
+        }
     }
 
     @PostMapping("/perguntar")
     public ResponseEntity<ChatResponseDTO> perguntar(@RequestBody ChatRequestDTO data) {
         Boolean salvar = data.salvarNoHistorico() == null ? true : data.salvarNoHistorico();
-        String resposta = geminiService.gerarRespostaComRAG(data.mensagem(), data.userId(), salvar);
-        return ResponseEntity.ok(new ChatResponseDTO(resposta));
+        Long sessionId = data.sessionId();
+        
+        if (salvar && sessionId == null && data.userId() != null) {
+            // Cria nova sessão se não existir
+            var user = userRepository.findById(data.userId()).orElse(null);
+            if (user != null) {
+                com.focusmind.api.domain.chat.ChatSession novaSessao = new com.focusmind.api.domain.chat.ChatSession();
+                novaSessao.setUser(user);
+                
+                // Título simples para a primeira mensagem
+                String titulo = data.mensagem().length() > 30 
+                    ? data.mensagem().substring(0, 30) + "..." 
+                    : data.mensagem();
+                novaSessao.setTitulo(titulo);
+                
+                novaSessao = chatSessionRepository.save(novaSessao);
+                sessionId = novaSessao.getId();
+            }
+        }
+        
+        String resposta = geminiService.gerarRespostaComRAG(data.mensagem(), data.userId(), sessionId, salvar);
+        return ResponseEntity.ok(new ChatResponseDTO(resposta, sessionId));
     }
 
     @GetMapping("/gerar-quiz")
@@ -68,6 +106,6 @@ public class ChatController {
         }
     }
 
-    public record ChatRequestDTO(String mensagem, Long userId, Boolean salvarNoHistorico) {}
-    public record ChatResponseDTO(String resposta) {}
+    public record ChatRequestDTO(String mensagem, Long userId, Long sessionId, Boolean salvarNoHistorico) {}
+    public record ChatResponseDTO(String resposta, Long sessionId) {}
 }

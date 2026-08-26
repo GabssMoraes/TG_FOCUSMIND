@@ -23,6 +23,10 @@ public class MensagemChat {
     @JoinColumn(name = "\"FK_ID_USUARIO\"")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "\"FK_ID_SESSION\"")
+    private ChatSession session;
+
     @Column(name = "\"SENDER\"", nullable = false)
     private String sender; // "user" ou "ai"
 

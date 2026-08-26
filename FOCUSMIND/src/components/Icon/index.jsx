@@ -22,6 +22,7 @@ const ICON_MAP = {
     profile: 'fa-solid fa-user',
     plus: 'fa-solid fa-plus',
     add: 'fa-solid fa-plus',
+    message: 'fa-solid fa-message',
     check: 'fa-solid fa-check',
     complete: 'fa-solid fa-check',
     trash: 'fa-solid fa-trash',
@@ -47,7 +48,10 @@ const ICON_MAP = {
     xmark: 'fa-solid fa-xmark',
     cross: 'fa-solid fa-xmark',
     pen: 'fa-solid fa-pen',
-    tree: 'fa-solid fa-tree'
+    tree: 'fa-solid fa-tree',
+    chart: 'fa-solid fa-chart-bar',
+    lock: 'fa-solid fa-lock',
+    'chevron-left': 'fa-solid fa-chevron-left'
 };
 
 export default function Icon({ name, className = '', style = {}, ...props }) {

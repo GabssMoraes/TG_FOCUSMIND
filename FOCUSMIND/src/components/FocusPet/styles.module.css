@@ -1,0 +1,191 @@
+.petCard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 20px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.5s;
+}
+
+.petCard.evolved { border-color: rgba(124, 108, 250, 0.3); }
+.petCard.legendary {
+    border-color: rgba(247, 197, 159, 0.4);
+    box-shadow: 0 0 40px rgba(247, 197, 159, 0.08);
+}
+
+/* Header */
+.petHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.petTitle {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.petLevel {
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 2px 10px;
+    border-radius: 100px;
+    background: rgba(124, 108, 250, 0.12);
+    color: #7c6cfa;
+}
+
+.petLevel.evolved { background: rgba(78, 205, 196, 0.12); color: #4ecdc4; }
+.petLevel.legendary { background: rgba(247, 197, 159, 0.15); color: #f7c59f; }
+
+/* Pet SVG wrapper */
+.petWrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.petSvg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ── Animações do pet ── */
+@keyframes petBreathe {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.03); }
+}
+
+@keyframes petBounce {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+}
+
+@keyframes petWiggle {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(-8deg); }
+    60% { transform: rotate(8deg); }
+}
+
+@keyframes petPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(124,108,250,0.5)); }
+    50% { transform: scale(1.05); filter: drop-shadow(0 0 12px rgba(124,108,250,0.8)); }
+}
+
+@keyframes petLegendary {
+    0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 8px rgba(247,197,159,0.8)); }
+    50% { transform: scale(1.04) rotate(1deg); filter: drop-shadow(0 0 18px rgba(247,197,159,1)); }
+}
+
+@keyframes flameDance {
+    0%, 100% { transform: scaleX(1) translateY(0); opacity: 0.85; }
+    50% { transform: scaleX(0.9) translateY(-3px); opacity: 0.7; }
+}
+
+.anim_sleeping { animation: petBreathe 3s ease-in-out infinite; }
+.anim_idle { animation: petBreathe 2s ease-in-out infinite; }
+.anim_happy { animation: petBounce 2.5s ease-in-out infinite; }
+.anim_excited { animation: petWiggle 1.8s ease-in-out infinite; }
+.anim_evolved { animation: petPulse 2s ease-in-out infinite; }
+.anim_legendary { animation: petLegendary 2.5s ease-in-out infinite; }
+
+.flames { animation: flameDance 1.2s ease-in-out infinite; transform-origin: center bottom; }
+
+.aura { animation: petBreathe 3s ease-in-out infinite; }
+
+/* Partículas */
+.particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #7c6cfa;
+    top: 50%;
+    left: 50%;
+    animation: particleOrbit calc(2s + var(--i) * 0.4s) linear infinite;
+    transform-origin: calc(-40px + var(--i) * 5px) 0;
+}
+
+.particle:nth-child(odd) { background: #4ecdc4; }
+.legendary .particle { background: #f7c59f; }
+
+@keyframes particleOrbit {
+    from { transform: rotate(calc(var(--i) * 60deg)); }
+    to { transform: rotate(calc(var(--i) * 60deg + 360deg)); }
+}
+
+/* Status */
+.petStatus {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+}
+
+.statusDot.sleeping { background: #6b7280; }
+.statusDot.idle { background: rgba(255,255,255,0.3); }
+.statusDot.happy { background: #4ecdc4; }
+.statusDot.excited { animation: petPulse 1s infinite; background: #7c6cfa; }
+.statusDot.evolved { background: #4ecdc4; animation: petPulse 1.5s infinite; }
+.statusDot.legendary { background: #f7c59f; animation: petPulse 0.8s infinite; }
+
+/* Hint */
+.petHint {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* XP bar */
+.xpBar {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.xpLabel {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.xpTrack {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.xpFill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #7c6cfa, #4ecdc4);
+    transition: width 1s cubic-bezier(0.23, 1, 0.32, 1);
+}

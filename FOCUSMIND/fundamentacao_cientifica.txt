@@ -1,0 +1,439 @@
+================================================================================
+FOCUSMIND — FUNDAMENTAÇÃO CIENTÍFICA DAS FUNCIONALIDADES DE ENGAJAMENTO
+================================================================================
+Trabalho de Graduação (TG) — Plataforma Web para Estudantes com Dificuldades de Foco
+Stack: React.js (Vite) + Spring Boot (Java)
+
+NOTA IMPORTANTE: O FocusMind é desenvolvido como ferramenta de produtividade e
+engajamento educacional para estudantes em geral. Não é um instrumento clínico e
+não se propõe a diagnosticar ou tratar condições de saúde. Todas as funcionalidades
+descritas abaixo têm base em pesquisas de psicologia educacional, ciência
+comportamental e design de produto.
+
+================================================================================
+1. CHECK-IN DIÁRIO EMOCIONAL
+================================================================================
+
+DESCRIÇÃO DA FUNCIONALIDADE:
+Modal de boas-vindas exibido uma vez por dia na primeira abertura do Dashboard.
+O usuário informa seu estado emocional (5 níveis), seleciona até 3 metas
+prioritárias do dia e escolhe a duração da sessão de foco. Após confirmação,
+o sistema navega automaticamente para o Temporizador com a duração selecionada.
+
+FUNDAMENTOS PSICOLÓGICOS E CIENTÍFICOS:
+
+[1] TEORIA DO COMPROMETIMENTO E CONSISTÊNCIA (Commitment & Consistency)
+    Autor: CIALDINI, Robert B.
+    Obra: "Influence: The Psychology of Persuasion"
+    Editora: Harper Business, 2007 (edição revisada; 1ª ed. 1984)
+    
+    Princípio: Quando uma pessoa declara publicamente (ou internamente) uma
+    intenção específica, a probabilidade de agir de acordo com essa declaração
+    aumenta significativamente. Cialdini demonstrou que o ato de verbalizar um
+    comprometimento — mesmo que brevemente — ativa mecanismos cognitivos de
+    consistência que aumentam a adesão ao comportamento declarado.
+    
+    Aplicação no FocusMind: O Check-in diário induz o estudante a declarar
+    explicitamente "Hoje vou estudar X minutos focando na meta Y", criando um
+    micro-comprometimento que aumenta a probabilidade de iniciar e completar
+    a sessão de estudo.
+
+[2] INTENÇÕES DE IMPLEMENTAÇÃO (Implementation Intentions)
+    Autor: GOLLWITZER, Peter M.
+    Obra: "Implementation intentions: Strong effects of simple plans"
+    Periódico: American Psychologist, vol. 54, nº 7, pp. 493-503, 1999
+    DOI: 10.1037/0003-066X.54.7.493
+    
+    Princípio: A formação de planos específicos do tipo "Quando X acontecer,
+    farei Y" (intenções de implementação) aumenta em até 300% a taxa de
+    concretização de objetivos, em comparação com apenas desejar realizá-los.
+    
+    Aplicação no FocusMind: Ao selecionar a meta e o horário/duração no check-in,
+    o usuário forma automaticamente uma intenção de implementação concreta,
+    reduzindo a lacuna entre intenção e ação.
+
+[3] AUTORREGULAÇÃO EMOCIONAL E DESEMPENHO ACADÊMICO
+    Autores: PINTRICH, Paul R.; DE GROOT, Elisabeth V.
+    Obra: "Motivational and Self-Regulated Learning Components of Classroom
+    Academic Performance"
+    Periódico: Journal of Educational Psychology, vol. 82, nº 1, pp. 33-40, 1990
+    DOI: 10.1037/0022-0663.82.1.33
+    
+    Princípio: O monitoramento do estado emocional antes das sessões de estudo
+    está positivamente correlacionado com melhores estratégias de aprendizagem
+    e maior persistência nas tarefas acadêmicas.
+    
+    Aplicação no FocusMind: A seleção de humor no check-in (de "Cansado" a "Ótimo")
+    serve como um momento de metacognição emocional, preparando o estudante
+    cognitivamente para a sessão.
+
+[4] REDUÇÃO DA PARALISIA DECISÓRIA (Choice Overload)
+    Autores: IYENGAR, Sheena S.; LEPPER, Mark R.
+    Obra: "When choice is demotivating: Can one desire too much of a good thing?"
+    Periódico: Journal of Personality and Social Psychology, vol. 79, nº 6, pp. 995-1006, 2000
+    DOI: 10.1037/0022-3514.79.6.995
+    
+    Princípio: Muitas opções disponíveis sem estrutura clara levam à paralisia
+    decisória, reduzindo a motivação para agir. Limitar escolhas a alternativas
+    pré-definidas facilita a tomada de decisão e aumenta a satisfação.
+    
+    Aplicação no FocusMind: O check-in oferece opções pré-estruturadas (3 durações,
+    5 estados emocionais) em vez de campos abertos, eliminando a sobrecarga
+    cognitiva antes do estudo.
+
+================================================================================
+2. COMPANHEIRO DE FOCO (PET VIRTUAL)
+================================================================================
+
+DESCRIÇÃO DA FUNCIONALIDADE:
+Personagem animado (coruja em SVG) presente no Dashboard. O estado visual do
+personagem muda dinamicamente com base nos dados reais do usuário: dias de
+sequência (streak), sessões completadas no dia e pontuação acumulada. O pet
+evolui por 4 níveis visuais progressivos (Filhote → Jovem → Adulto → Lendário)
+com animações CSS responsivas ao comportamento do estudante.
+
+FUNDAMENTOS PSICOLÓGICOS E CIENTÍFICOS:
+
+[5] TEORIA DO APEGO DIGITAL (Digital Attachment Theory)
+    Autora: TURKLE, Sherry
+    Obra: "Alone Together: Why We Expect More from Technology and Less from
+    Each Other"
+    Editora: Basic Books, 2011
+    
+    Princípio: Humanos constroem laços emocionais genuínos com entidades digitais
+    que parecem responder e reagir às suas ações. Esse apego cria responsabilidade
+    projetada — o usuário sente-se responsável pelo "bem-estar" do ser digital.
+    
+    Aplicação no FocusMind: O fato de o companheiro "adormecer" quando o usuário
+    fica sem estudar cria um gatilho emocional de responsabilidade que aumenta a
+    motivação para retornar ao estudo ("meu companheiro está dormindo porque não
+    estudei hoje").
+
+[6] EFEITO ENDOWMENT EM AVATARES DIGITAIS
+    Autores: YEE, Nick; BAILENSON, Jeremy N.
+    Obra: "The Proteus Effect: The Effect of Transformed Self-Representation on
+    Behavior"
+    Periódico: Human Communication Research, vol. 33, nº 3, pp. 271-290, 2007
+    DOI: 10.1111/j.1468-2958.2007.00299.x
+    
+    Princípio: Usuários tendem a adotar comportamentos condizentes com a
+    representação visual de seu avatar digital. Avatares mais evoluídos e
+    poderosos induzem comportamentos mais confiantes e persistentes.
+    
+    Aplicação no FocusMind: À medida que o companheiro evolui (de filhote para
+    lendário), o estudante associa seu progresso real ao progresso visual do pet,
+    reforçando positivamente os comportamentos de estudo.
+
+[7] RETROALIMENTAÇÃO IMEDIATA E MOTIVAÇÃO INTRÍNSECA
+    Autores: DECI, Edward L.; RYAN, Richard M.
+    Obra: "Intrinsic Motivation and Self-Determination in Human Behavior"
+    Editora: Plenum Press, 1985
+    Obra adicional: "Self-determination theory: A macro theory of human motivation,
+    development, and health"
+    Periódico: Canadian Psychology, vol. 49, nº 3, pp. 182-185, 2008
+    DOI: 10.1037/a0012801
+    
+    Princípio: A Teoria da Autodeterminação (SDT) postula que feedback imediato
+    e visível sobre o progresso alimenta a motivação intrínseca, especialmente
+    quando o feedback está diretamente ligado às ações do próprio sujeito.
+    
+    Aplicação no FocusMind: As animações do pet (dormindo → animado → em chamas)
+    fornecem feedback visual imediato e contínuo sobre o padrão de estudo,
+    sem punições externas — mantendo o locus de controle interno.
+
+================================================================================
+3. MODO PAUSA GUIADA
+================================================================================
+
+DESCRIÇÃO DA FUNCIONALIDADE:
+Após o usuário salvar o feedback de uma sessão Pomodoro, em vez de retornar
+ao timer parado, um modal apresenta 3 opções de atividade para a pausa:
+(a) Respiração Guiada com técnica 4-7-8 (animação CSS de círculo expansivo);
+(b) Reflexão Rápida com textarea salvo em localStorage;
+(c) Descanso com efeito ripple e timer regressivo.
+O usuário permanece no FocusMind durante toda a pausa.
+
+FUNDAMENTOS PSICOLÓGICOS E CIENTÍFICOS:
+
+[8] CUSTOS DE TROCA DE CONTEXTO COGNITIVO (Cognitive Context Switching)
+    Autora: RUBINSTEIN, Joshua S.; MEYER, David E.; EVANS, Jeffrey E.
+    Obra: "Executive Control of Cognitive Processes in Task Switching"
+    Periódico: Journal of Experimental Psychology: Human Perception and
+    Performance, vol. 27, nº 4, pp. 763-797, 2001
+    DOI: 10.1037/0096-1523.27.4.763
+    
+    Princípio: Trocar de tarefa ou contexto (abrir outra aba, aplicativo, etc.)
+    implica um custo cognitivo mensurável. Estudos mostram que recuperar o nível
+    de foco anterior a uma interrupção pode levar em média 23 minutos.
+    
+    Referência complementar: MARK, Gloria; GUDITH, Daniela; KLOCKE, Ulrich.
+    "The Cost of Interrupted Work: More Speed and Stress"
+    Proceedings of CHI 2008, pp. 107-110.
+    DOI: 10.1145/1357054.1357072
+    
+    Aplicação no FocusMind: O Modo Pausa Guiada elimina a necessidade de o
+    estudante sair do FocusMind durante a pausa, evitando o custo de troca de
+    contexto e preservando o estado mental para a próxima sessão.
+
+[9] TÉCNICA DE RESPIRAÇÃO 4-7-8 E REGULAÇÃO DO SISTEMA NERVOSO
+    Autor: WEIL, Andrew (popularizador; baseado em práticas de Pranayama)
+    Referência científica: JERATH, Ravinder et al.
+    Obra: "Physiology of long pranayamic breathing: Neural respiratory elements
+    may provide a mechanism that explains how slow deep breathing shifts the
+    autonomic nervous system"
+    Periódico: Medical Hypotheses, vol. 67, nº 3, pp. 566-571, 2006
+    DOI: 10.1016/j.mehy.2006.02.042
+    
+    Princípio: A respiração profunda e ritmada com expiração prolongada ativa o
+    sistema nervoso parassimpático, reduzindo cortisol e preparando o córtex
+    pré-frontal para nova sessão de atenção sustentada.
+    
+    Aplicação no FocusMind: A animação visual do círculo que expande e contrai
+    sincronizada com as fases 4-7-8 oferece uma âncora visual para a prática
+    de respiração, tornando-a acessível sem instrução prévia.
+
+[10] ESCRITA REFLEXIVA E CONSOLIDAÇÃO DA MEMÓRIA
+     Autores: PENNEBAKER, James W.; SEAGAL, Janel D.
+     Obra: "Forming a Story: The Health Benefits of Narrative"
+     Periódico: Journal of Clinical Psychology, vol. 55, nº 10, pp. 1243-1254, 1999
+     DOI: 10.1002/(SICI)1097-4679(199910)55:10<1243::AID-JCLP6>3.0.CO;2-N
+     
+     Princípio: Escrever brevemente sobre uma experiência de aprendizagem
+     imediatamente após ela ocorrer melhora a consolidação da memória declarativa
+     e promove processamento mais profundo das informações estudadas.
+     
+     Aplicação no FocusMind: A opção "Reflexão Rápida" durante a pausa guiada
+     incentiva o estudante a escrever 1-2 linhas sobre o que aprendeu, reforçando
+     a memória sem demandar esforço cognitivo excessivo.
+
+[11] MICROPAUSAS E DESEMPENHO COGNITIVO SUSTENTADO
+     Autores: ARIGA, Atsunori; LLERAS, Alejandro
+     Obra: "Brief and rare mental 'breaks' keep you focused: Deactivation and
+     reactivation of task goals preempt vigilance decrements"
+     Periódico: Cognition, vol. 118, nº 3, pp. 439-443, 2011
+     DOI: 10.1016/j.cognition.2010.12.007
+     
+     Princípio: Pausas breves e estruturadas durante tarefas cognitivas prolongadas
+     previnem a queda de desempenho por "vigilância decrescente" — fenômeno onde
+     o cérebro normaliza estímulos repetitivos e reduz a atenção seletiva.
+     
+     Aplicação no FocusMind: O sistema Pomodoro já implementa esse princípio. O
+     Modo Pausa Guiada estrutura essas pausas para que sejam ativas e produtivas,
+     não apenas "tempo ocioso" que pode resultar em distração.
+
+================================================================================
+4. DESAFIOS SEMANAIS ROTATIVOS
+================================================================================
+
+DESCRIÇÃO DA FUNCIONALIDADE:
+A cada semana (a partir de segunda-feira), o sistema seleciona deterministicamente
+3 desafios de um pool de 10 possíveis, exibidos como cards com barra de progresso
+animada no Dashboard. O progresso é calculado automaticamente a partir dos dados
+já existentes (sessões, metas, streak). Os desafios renovam todo domingo à meia-noite.
+
+FUNDAMENTOS PSICOLÓGICOS E CIENTÍFICOS:
+
+[12] TEORIA DAS METAS PROXIMAIS vs. DISTAIS (Proximal vs. Distal Goals)
+     Autor: BANDURA, Albert; SCHUNK, Dale H.
+     Obra: "Cultivating competence, self-efficacy, and intrinsic interest through
+     proximal self-motivation"
+     Periódico: Journal of Personality and Social Psychology, vol. 41, nº 3, pp. 586-598, 1981
+     DOI: 10.1037/0022-3514.41.3.586
+     
+     Princípio: Metas de curto prazo (proximais) são significativamente mais
+     eficazes na manutenção da motivação do que metas de longo prazo (distais),
+     pois oferecem feedback de progresso mais frequente e sensação de competência
+     mais imediata.
+     
+     Aplicação no FocusMind: Desafios semanais (7 dias) complementam a progressão
+     de longo prazo da Jornada (que exige centenas de pontos) com micro-objetivos
+     de curto prazo que renovam o senso de propósito semanalmente.
+
+[13] NOVIDADE, DOPAMINA E ENGAJAMENTO
+     Autores: BARTO, Andrew; MIROLLI, Marco; BALDASSARRE, Gianluca
+     Obra: "Novelty or Surprise?"
+     Periódico: Frontiers in Psychology, vol. 4, artigo 907, 2013
+     DOI: 10.3389/fpsyg.2013.00907
+     
+     Referência complementar: BROMBERG-MARTIN, Ethan S.; MATSUMOTO, Masayuki; HIKOSAKA, Okihide
+     Obra: "Dopamine in Motivational Control: Rewarding, Aversive, and Alerting"
+     Periódico: Neuron, vol. 68, nº 5, pp. 815-834, 2010
+     DOI: 10.1016/j.neuron.2010.11.022
+     
+     Princípio: Novidade e incerteza controlada estimulam a liberação de dopamina
+     no núcleo accumbens, mantendo elevados os níveis de engajamento. A rotatividade
+     semanal cria um ciclo de antecipação ("o que vem esta semana?") que previne
+     a habituação dopaminérgica.
+     
+     Aplicação no FocusMind: A renovação semanal dos desafios garante que o
+     estudante sempre tenha algo novo para conquistar, evitando que o sistema
+     de recompensa perca eficácia por repetição.
+
+[14] GAMIFICAÇÃO E MOTIVAÇÃO ACADÊMICA
+     Autores: HAMARI, Juho; KOIVISTO, Jonna; SARSA, Harri
+     Obra: "Does Gamification Work? — A Literature Review of Empirical Studies
+     on Gamification"
+     Periódico: Proceedings of the 47th Hawaii International Conference on System
+     Sciences (HICSS), pp. 3025-3034, 2014
+     DOI: 10.1109/HICSS.2014.377
+     
+     Princípio: Revisão sistemática de 24 estudos empíricos indica que elementos
+     de gamificação (pontos, desafios, badges) são mais eficazes quando
+     integrados a comportamentos intrinsecamente significativos para o usuário.
+     Gamificação puramente cosmética tem efeito reduzido a longo prazo.
+     
+     Aplicação no FocusMind: Os desafios recompensam comportamentos educacionais
+     reais (completar sessões, fazer quizzes, manter streak), não ações arbitrárias,
+     alinhando-se com o princípio de "gamificação funcional" defendido no TCC.
+
+================================================================================
+5. NOTAS RÁPIDAS IN-APP
+================================================================================
+
+DESCRIÇÃO DA FUNCIONALIDADE:
+Botão flutuante (FAB) no canto inferior direito da tela, acessível em todas as
+páginas do FocusMind via clique ou atalho de teclado Ctrl+N. Ao ativar, um
+drawer lateral slide-in apresenta um editor de texto simples com auto-save
+(localStorage, debounce 600ms) e uma lista das últimas notas salvas. Elimina
+a necessidade de abrir outro aplicativo durante o estudo.
+
+FUNDAMENTOS PSICOLÓGICOS E CIENTÍFICOS:
+
+[15] CUSTO DO CAMBIO ATENCIONAL (Attentional Switching Cost)
+     Autores: RUBINSTEIN, Joshua S.; MEYER, David E.; EVANS, Jeffrey E.
+     (mesma referência do item [8])
+     
+     Complementar: OPHIR, Eyal; NASS, Clifford; WAGNER, Anthony D.
+     Obra: "Cognitive control in media multitaskers"
+     Periódico: Proceedings of the National Academy of Sciences (PNAS),
+     vol. 106, nº 37, pp. 15583-15587, 2009
+     DOI: 10.1073/pnas.0903620106
+     
+     Princípio: Usuários que frequentemente alternam entre múltiplos contextos
+     digitais apresentam menor capacidade de filtragem de informações irrelevantes
+     e maior vulnerabilidade à distração. Reduzir as razões para trocar de aba
+     é uma estratégia eficaz de preservação do foco.
+     
+     Aplicação no FocusMind: O Ctrl+N permite capturar um pensamento em menos de
+     2 segundos sem sair do FocusMind, eliminando uma das causas mais comuns de
+     abandono da sessão de foco: "preciso anotar isso antes de esquecer".
+
+[16] TEORIA GTD — GETTING THINGS DONE (Captura Imediata)
+     Autor: ALLEN, David
+     Obra: "Getting Things Done: The Art of Stress-Free Productivity"
+     Editora: Viking Press, 2001
+     
+     Princípio: O cérebro humano é ineficiente para armazenar itens de ação
+     pendentes. Quando um pensamento ou tarefa surge durante o trabalho focado,
+     ele deve ser "capturado" imediatamente em um sistema externo para libertar
+     a memória de trabalho (working memory) e permitir que o foco retorne à
+     tarefa principal.
+     
+     Aplicação no FocusMind: As Notas Rápidas funcionam como a "caixa de entrada"
+     do método GTD — um local de captura rápida e sem fricção que esvazia a
+     memória de trabalho do estudante sem interromper o fluxo de estudo.
+
+[17] MEMÓRIA DE TRABALHO E APRENDIZAGEM
+     Autor: BADDELEY, Alan D.
+     Obra: "Working Memory"
+     Periódico: Science, vol. 255, nº 5044, pp. 556-559, 1992
+     DOI: 10.1126/science.1736359
+     
+     Princípio: A memória de trabalho tem capacidade limitada (aproximadamente
+     7 ± 2 itens). Quando pensamentos não relacionados à tarefa principal ocupam
+     slots da memória de trabalho, há redução direta na capacidade de processamento
+     e aprendizagem.
+     
+     Aplicação no FocusMind: Ao capturar o pensamento em uma nota externa, o
+     estudante libera esse "slot" da memória de trabalho, permitindo que toda
+     a capacidade cognitiva seja direcionada ao conteúdo de estudo.
+
+[18] EFEITO ZEIGARNIK E TAREFAS INCOMPLETAS
+     Autora: ZEIGARNIK, Bluma
+     Obra: "On Finished and Unfinished Tasks" (originalmente em alemão: 
+     "Über das Behalten von erledigten und unerledigten Handlungen", 1927)
+     Tradução: In Lewin, K. (Ed.), A Dynamic Theory of Personality, 1935
+     
+     Referência moderna: MASICAMPO, E.J.; BAUMEISTER, Roy F.
+     Obra: "Consider It Done! Plan Making Can Eliminate the Cognitive Effects
+     of Unfulfilled Goals"
+     Periódico: Journal of Personality and Social Psychology, vol. 101, nº 4, pp. 667-683, 2011
+     DOI: 10.1037/a0024192
+     
+     Princípio: Tarefas incompletas ou pensamentos não resolvidos ocupam
+     persistentemente a atenção (Efeito Zeigarnik). Masicampo e Baumeister
+     demonstraram que simplesmente escrever um plano específico para uma tarefa
+     pendente elimina seu efeito perturbador na memória de trabalho.
+     
+     Aplicação no FocusMind: Escrever uma nota rápida ("lembrar de checar ref. X")
+     resolve o Efeito Zeigarnik — o cérebro registra que a tarefa "não está mais
+     perdida" e permite que a atenção retorne ao estudo sem culpa.
+
+================================================================================
+REFERÊNCIAS ADICIONAIS — TÉCNICA POMODORO E FLOW STATE
+================================================================================
+
+[19] TÉCNICA POMODORO
+     Autor: CIRILLO, Francesco
+     Obra: "The Pomodoro Technique" (1992, circulado como working paper;
+     publicado oficialmente em 2006)
+     Disponível em: https://francescocirillo.com/products/the-pomodoro-technique
+     
+     Princípio: Ciclos de trabalho concentrado de 25 minutos seguidos de pausas
+     de 5 minutos aumentam a produtividade e reduzem a fadiga mental, ao forçar
+     a alternância regular entre foco e recuperação cognitiva.
+
+[20] ESTADO DE FLOW (Flow State)
+     Autor: CSIKSZENTMIHALYI, Mihaly
+     Obra: "Flow: The Psychology of Optimal Experience"
+     Editora: Harper & Row, 1990
+     
+     Princípio: O estado de Flow é caracterizado por completa absorção em uma
+     tarefa desafiadora mas alcançável, com desaparecimento da consciência do
+     tempo e sensação de prazer intrínseco. Para atingir Flow, é necessário:
+     (a) objetivo claro (→ Check-in diário);
+     (b) feedback imediato (→ Companheiro de Foco, Desafios);
+     (c) equilíbrio desafio/habilidade (→ Duração ajustável do timer);
+     (d) ausência de interrupções (→ Notas Rápidas, Pausa Guiada).
+
+[21] EFEITO SPACING E REVISÃO ESPAÇADA
+     Autor: EBBINGHAUS, Hermann
+     Obra: "Über das Gedächtnis: Untersuchungen zur experimentellen Psychologie"
+     (Sobre a Memória), Duncker & Humblot, 1885
+     
+     Referência moderna: CEPEDA, Nicholas J. et al.
+     Obra: "Distributed practice in verbal recall tasks: A review and quantitative
+     synthesis"
+     Periódico: Psychological Bulletin, vol. 132, nº 3, pp. 354-380, 2006
+     DOI: 10.1037/0033-2909.132.3.354
+     
+     Princípio: O espaçamento temporal das sessões de estudo (ao longo de dias)
+     produz retenção de longo prazo significativamente superior ao estudo em
+     blocos contínuos (cramming). A Revisão Semanal e o sistema de streak do
+     FocusMind incentivam o espaçamento natural das sessões.
+
+================================================================================
+CONSIDERAÇÕES ÉTICAS E LIMITAÇÕES
+================================================================================
+
+• O FocusMind foi desenvolvido como ferramenta de produtividade educacional,
+  não como instrumento diagnóstico ou terapêutico.
+  
+• As funcionalidades de gamificação foram projetadas para aumentar o engajamento
+  com comportamentos educacionais saudáveis, evitando padrões de vício digital
+  (não há loops de recompensa variável infinita; os desafios têm objetivos claros
+  e atingíveis).
+  
+• O sistema respeita a autonomia do usuário: nenhuma funcionalidade é obrigatória.
+  O Check-in pode ser pulado, a Pausa Guiada pode ser ignorada e as Notas Rápidas
+  são opcionais.
+  
+• Os dados coletados (sessões, metas, reflexões) servem exclusivamente para
+  personalização da experiência do próprio usuário, sem fins comerciais ou de
+  rastreamento.
+
+================================================================================
+COMPILADO POR: FocusMind Development Team
+DATA: Agosto de 2026
+VERSÃO DO DOCUMENTO: 1.0
+================================================================================

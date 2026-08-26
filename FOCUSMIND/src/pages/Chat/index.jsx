@@ -1,43 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../../components/Icon';
+import { toast } from 'react-hot-toast';
+import { formatMessage } from '../../utils/formatters';
 import styles from './styles.module.css';
 
-// Função auxiliar para formatar a resposta do Gemini em HTML limpo e amigável
-const formatMessage = (text) => {
-    if (!text) return '';
-    
-    // Escapa tags HTML nativas para evitar XSS
-    let escaped = text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
-    // Transforma negrito **texto** em <strong>texto</strong>
-    escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-    // Identifica e formata bullet points que começam com • ou *
-    const lines = escaped.split('\n');
-    const formattedLines = lines.map(line => {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('•') || trimmed.startsWith('*')) {
-            const content = trimmed.substring(1).trim();
-            return `<li style="margin-left: 15px; margin-bottom: 4px;">${content}</li>`;
-        }
-        return line;
-    });
-
-    return formattedLines.join('<br />');
-};
+const DEFAULT_GREETING = { sender: 'ai', text: 'Oi! Como posso te ajudar hoje?' };
 
 export default function Chat() {
     const { userId } = useAuth();
 
     const [chatInput, setChatInput] = useState('');
-    const [messages, setMessages] = useState([
-        { sender: 'ai', text: 'Oi! Como posso te ajudar hoje?' }
-    ]);
+    const [messages, setMessages] = useState([DEFAULT_GREETING]);
     const [isLoading, setIsLoading] = useState(false);
+    
+    // Novas states para sessões
+    const [sessions, setSessions] = useState([]);
+    const [activeSessionId, setActiveSessionId] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // para mobile
 
     const chatBottomRef = useRef(null);
 
@@ -45,69 +25,118 @@ export default function Chat() {
         chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isLoading]);
 
-    useEffect(() => {
-        const loadHistory = async () => {
-            if (!userId) return;
-            try {
-                const res = await fetch(`http://localhost:8080/api/chat/historico?userId=${userId}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.length > 0) {
-                        const formatted = data.map(msg => ({
-                            sender: msg.sender,
-                            text: formatMessage(msg.texto)
-                        }));
-                        setMessages(formatted);
-                    }
-                }
-            } catch (err) {
-                console.error("Erro ao carregar histórico do chat:", err);
+    // Carregar todas as sessões do usuário
+    const loadSessions = useCallback(async () => {
+        if (!userId) return;
+        try {
+            const res = await fetch(`http://localhost:8080/api/chat/sessoes?userId=${userId}`);
+            if (res.ok) {
+                const data = await res.json();
+                setSessions(data);
+                // Opcional: auto-selecionar a sessão mais recente se não houver nenhuma ativa
+                // if (data.length > 0 && !activeSessionId) {
+                //    loadHistory(data[0].id);
+                // }
             }
-        };
-        loadHistory();
+        } catch (err) {
+            console.error("Erro ao carregar sessões:", err);
+        }
     }, [userId]);
+
+    useEffect(() => {
+        loadSessions();
+    }, [loadSessions]);
+
+    // Carregar histórico de uma sessão específica
+    const loadHistory = async (sessionId) => {
+        setActiveSessionId(sessionId);
+        setIsSidebarOpen(false); // fecha a sidebar no mobile
+        setMessages([DEFAULT_GREETING]); // limpa enquanto carrega
+        
+        try {
+            const res = await fetch(`http://localhost:8080/api/chat/historico?sessionId=${sessionId}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.length > 0) {
+                    const formatted = data.map(msg => ({
+                        sender: msg.sender,
+                        text: formatMessage(msg.texto)
+                    }));
+                    setMessages(formatted);
+                }
+            }
+        } catch (err) {
+            console.error("Erro ao carregar histórico do chat:", err);
+            toast.error("Erro ao carregar conversa.");
+        }
+    };
+
+    const handleNewChat = () => {
+        setActiveSessionId(null);
+        setMessages([DEFAULT_GREETING]);
+        setIsSidebarOpen(false);
+    };
+
+    const handleDeleteSession = async (e, sessionId) => {
+        e.stopPropagation(); // Evita selecionar a sessão ao clicar na lixeira
+        if (!window.confirm("Tem certeza que deseja apagar esta conversa?")) return;
+        
+        try {
+            const res = await fetch(`http://localhost:8080/api/chat/sessoes/${sessionId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                toast.success("Conversa apagada.");
+                setSessions(prev => prev.filter(s => s.id !== sessionId));
+                if (activeSessionId === sessionId) {
+                    handleNewChat();
+                }
+            }
+        } catch (err) {
+            toast.error("Erro ao deletar conversa.");
+        }
+    };
 
     const handleSendMessage = async () => {
         if (!chatInput.trim() || isLoading) return;
 
         const userMessage = chatInput;
-
         setMessages((prev) => [
             ...prev,
             { sender: 'user', text: formatMessage(userMessage) }
         ]);
-
         setChatInput('');
         setIsLoading(true);
 
         try {
             const response = await fetch('http://localhost:8080/api/chat/perguntar', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ mensagem: userMessage, userId })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    mensagem: userMessage, 
+                    userId,
+                    sessionId: activeSessionId 
+                })
             });
 
-            if (!response.ok) {
-                throw new Error('Falha na comunicação com o servidor.');
-            }
+            if (!response.ok) throw new Error('Falha na comunicação.');
 
             const data = await response.json();
+
+            // Se for uma nova sessão, atualiza o sessionId e recarrega a lista
+            if (!activeSessionId && data.sessionId) {
+                setActiveSessionId(data.sessionId);
+                loadSessions();
+            }
 
             setMessages((prev) => [
                 ...prev,
                 { sender: 'ai', text: formatMessage(data.resposta) }
             ]);
-
         } catch (error) {
-            console.error('Erro no chat:', error);
             setMessages((prev) => [
                 ...prev,
-                { 
-                    sender: 'ai', 
-                    text: '<span style="color: #ff6b6b; font-weight: 500;">⚠️ Ops! Não consegui me conectar ao assistente. Certifique-se de que o backend está rodando e com a chave da API do Gemini configurada em application-secret.properties.</span>' 
-                }
+                { sender: 'ai', text: '<span style="color: #ff6b6b; font-weight: 500;">⚠️ Ops! Não consegui me conectar ao assistente.</span>' }
             ]);
         } finally {
             setIsLoading(false);
@@ -118,11 +147,55 @@ export default function Chat() {
         <div className={styles.page}>
             <div className={styles['chat-layout']}>
 
-                <div className={styles['chat-main']}>
+                {/* ── Sidebar (Sessões) ── */}
+                <div className={`${styles['chat-sidebar']} ${isSidebarOpen ? styles.open : ''}`}>
+                    <div className={styles['sidebar-header']}>
+                        <button className={styles['btn-new-chat']} onClick={handleNewChat}>
+                            <Icon name="plus" /> Nova Conversa
+                        </button>
+                    </div>
+                    
+                    <div className={styles['sessions-list']}>
+                        {sessions.length === 0 && (
+                            <div style={{ textAlign: 'center', color: '#7a8099', fontSize: '0.85rem', marginTop: '20px' }}>
+                                Nenhuma conversa salva.
+                            </div>
+                        )}
+                        {sessions.map(session => {
+                            const data = new Date(session.dataCriacao);
+                            return (
+                                <div 
+                                    key={session.id} 
+                                    className={`${styles['session-item']} ${activeSessionId === session.id ? styles.active : ''}`}
+                                    onClick={() => loadHistory(session.id)}
+                                >
+                                    <Icon name="message" style={{ fontSize: '0.9rem', color: activeSessionId === session.id ? '#c0b8f7' : 'inherit' }} />
+                                    <div className={styles['session-info']}>
+                                        <div className={styles['session-title']} title={session.titulo}>
+                                            {session.titulo || "Nova Conversa"}
+                                        </div>
+                                        <div className={styles['session-date']}>
+                                            {data.toLocaleDateString('pt-BR')} {data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                    </div>
+                                    <button 
+                                        className={styles['btn-delete-session']} 
+                                        onClick={(e) => handleDeleteSession(e, session.id)}
+                                        title="Apagar conversa"
+                                    >
+                                        <Icon name="delete" />
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
 
+                {/* ── Chat Principal ── */}
+                <div className={styles['chat-main']}>
                     <div className={styles['chat-header']}>
                         <div className={styles['ai-avatar']}><Icon name="bot" /></div>
-                        <div>
+                        <div style={{ flex: 1 }}>
                             <div style={{ fontFamily: 'Syne', fontWeight: 700 }}>
                                 FocusBot
                             </div>
@@ -141,7 +214,6 @@ export default function Chat() {
                                 <div className={`${styles['msg-avatar']} ${msg.sender === 'ai' ? styles['msg-ai-avatar'] : styles['msg-user-avatar']}`}>
                                     {msg.sender === 'ai' ? <Icon name="bot" /> : <Icon name="user" />}
                                 </div>
-
                                 <div
                                     className={styles['msg-bubble']}
                                     dangerouslySetInnerHTML={{ __html: msg.text }}
@@ -172,7 +244,6 @@ export default function Chat() {
                             >
                                 Como melhorar meu foco?
                             </div>
-
                             <div
                                 className={styles.chip}
                                 style={{ cursor: 'pointer' }}
@@ -197,7 +268,6 @@ export default function Chat() {
                                     }
                                 }}
                             />
-
                             <button
                                 className={styles['chat-send']}
                                 onClick={handleSendMessage}
@@ -208,8 +278,8 @@ export default function Chat() {
                             </button>
                         </div>
                     </div>
-
                 </div>
+
             </div>
         </div>
     );

@@ -3,29 +3,31 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../Icon';
 import StreakModal from '../StreakModal';
+import QuickNotes from '../QuickNotes';
 import styles from './styles.module.css';
 
 const PAGE_TITLES = {
-    '/dashboard':    'Início',
-    '/timer':        'Temporizador de Foco',
+    '/dashboard': 'Início',
+    '/timer': 'Temporizador de Foco',
     '/timeblocking': 'Bloqueio de Tempo',
-    '/revisao':      'Revisão Semanal',
-    '/chat':         'FocusBot — IA',
-    '/loja':         'Loja de Recompensas',
-    '/profile':      'Meu Perfil',
-    '/quiz':         'Quiz Diário',
-    '/jornada':      'Jornada',
+    '/revisao': 'Revisão Semanal',
+    '/chat': 'FocusBot — IA',
+    '/loja': 'Loja de Recompensas',
+    '/profile': 'Meu Perfil',
+    '/quiz': 'Quiz Diário',
+    '/jornada': 'Jornada',
 };
 
 const NAV = [
-    { to: '/dashboard',    icon: 'dashboard', label: 'Início', tooltip: 'Painel geral com resumo de rotina' },
-    { to: '/timer',        icon: 'timer', label: 'Temporizador', tooltip: 'Temporizador Pomodoro para foco' },
+    { to: '/dashboard', icon: 'dashboard', label: 'Início', tooltip: 'Painel geral com resumo de rotina' },
+    { to: '/timer', icon: 'timer', label: 'Temporizador', tooltip: 'Temporizador Pomodoro para foco' },
     { to: '/timeblocking', icon: 'calendar', label: 'Grade Horária', tooltip: 'Planejamento semanal de tempo' },
-    { to: '/revisao',      icon: 'review', label: 'Revisão Semanal', tooltip: 'Autoavaliação e reflexão semanal' },
-    { to: '/quiz',         icon: 'brain', label: 'Quiz Diário', tooltip: 'Teste seus conhecimentos gerados por IA' },
-    { to: '/jornada',      icon: 'star', label: 'Jornada', tooltip: 'Acompanhe seu Modo História e mapa visual' },
-    { to: '/chat',         icon: 'bot', label: 'FocusBot', tooltip: 'Conversa com inteligência artificial' },
-    { to: '/loja',         icon: 'shop', label: 'Loja', tooltip: 'Resgatar recompensas com moedas' },
+    { to: '/revisao', icon: 'review', label: 'Revisão Semanal', tooltip: 'Autoavaliação e reflexão semanal' },
+    { to: '/quiz', icon: 'brain', label: 'Quiz Diário', tooltip: 'Teste seus conhecimentos gerados por IA' },
+    { to: '/jornada', icon: 'star', label: 'Jornada', tooltip: 'Acompanhe seu Modo História e mapa visual' },
+    { to: '/chat', icon: 'bot', label: 'FocusBot', tooltip: 'Conversa com inteligência artificial' },
+    { to: '/loja', icon: 'shop', label: 'Loja', tooltip: 'Resgatar recompensas com moedas' },
+    { to: '/profile', icon: 'user', label: 'Meu Perfil', tooltip: 'Configurações e estatísticas da sua conta' },
 ];
 
 export default function AppLayout({ children }) {
@@ -45,7 +47,7 @@ export default function AppLayout({ children }) {
             .then(data => {
                 if (data) {
                     setProfile({ pontos: data.pontos, streakDias: data.streakDias });
-                    
+
                     // Lógica para abrir o modal automaticamente
                     const todayStr = new Date().toLocaleDateString();
                     const lastDate = localStorage.getItem('lastStreakPopupDate');
@@ -55,7 +57,7 @@ export default function AppLayout({ children }) {
                     if (data.streakDias > 0 && lastDate !== todayStr) {
                         setShowStreakModal(true);
                         localStorage.setItem('lastStreakPopupDate', todayStr);
-                    } 
+                    }
                     // Abre se o usuário tinha uma streak e perdeu ela (caiu pra 0)
                     else if (data.streakDias === 0 && lastStreakCount > 0) {
                         setShowStreakModal(true);
@@ -85,7 +87,7 @@ export default function AppLayout({ children }) {
                 onClick={closeSidebar}
             />
 
-             {/* ===== SIDEBAR ===== */}
+            {/* ===== SIDEBAR ===== */}
             <aside className={`${styles.sidebar} ${sidebarOpen ? styles.open : ''}`}>
                 {/* Logo */}
                 <div className={styles.sidebarLogo}>
@@ -155,6 +157,9 @@ export default function AppLayout({ children }) {
             {showStreakModal && (
                 <StreakModal streak={profile.streakDias} onClose={() => setShowStreakModal(false)} />
             )}
+
+            {/* Notas Rápidas — disponível em todas as páginas via Ctrl+N */}
+            <QuickNotes />
         </div>
     );
 }

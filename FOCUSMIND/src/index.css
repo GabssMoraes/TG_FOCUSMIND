@@ -83,3 +83,100 @@ p { margin: 0; }
   display: inline-block;
 }
 
+/* =============================================
+   MICRO-INTERAÇÕES GLOBAIS — FocusMind Premium
+   ============================================= */
+
+/* Seleção de texto com cor da marca */
+::selection {
+  background: rgba(124, 108, 250, 0.35);
+  color: #fff;
+}
+
+/* ── Botões com Glow ao Hover ── */
+/* Aplica em qualquer <button> que tenha as classes btn-glow ou data-glow */
+.btn-glow,
+button[data-glow] {
+  transition: transform 0.18s cubic-bezier(0.23, 1, 0.32, 1),
+              box-shadow 0.18s ease,
+              opacity 0.18s ease;
+}
+
+.btn-glow:hover:not(:disabled),
+button[data-glow]:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(124, 108, 250, 0.4);
+}
+
+.btn-glow:active:not(:disabled),
+button[data-glow]:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+/* ── Tilt 3D via CSS Variables ── */
+/* Coloque data-tilt em qualquer card. O JS de tilt abaixo injeta as variáveis. */
+[data-tilt] {
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  will-change: transform;
+}
+
+/* ── Transição suave de entrada de página ── */
+/* Aplique a classe .page-enter nos wrappers de cada página */
+.page-enter {
+  animation: pageIn 0.35s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+/* ── Fade + Slide para modais ── */
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-enter {
+  animation: modalIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+/* ── Pop In para ícones e badges ── */
+@keyframes popIn {
+  0%  { transform: scale(0.5); opacity: 0; }
+  75% { transform: scale(1.12); }
+  100%{ transform: scale(1); opacity: 1; }
+}
+
+.pop-in {
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+/* ── Shimmer loading placeholder ── */
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to   { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 8px;
+}
+
+/* ── Glow colorido (para elementos especiais) ── */
+.glow-accent  { box-shadow: 0 0 20px rgba(124, 108, 250, 0.35); }
+.glow-teal    { box-shadow: 0 0 20px rgba(78, 205, 196, 0.35); }
+.glow-gold    { box-shadow: 0 0 20px rgba(247, 197, 159, 0.35); }
+
+/* ── Floating animation (para ícones de destaque) ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+.floating {
+  animation: float 3s ease-in-out infinite;
+}
