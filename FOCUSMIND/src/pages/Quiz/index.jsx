@@ -80,15 +80,27 @@ export default function Quiz() {
         
         const finalScore = score + (selectedOption === quizData[currentQuestionIndex].respostaCorreta ? 1 : 0);
         
+        // Se acertou >= 80%, incrementa o desafio semanal "Mestre do Quiz" (quiz_ace)
+        if (quizData.length > 0 && (finalScore / quizData.length) >= 0.8 && userId) {
+            const qKey = `@FocusMind:challenge_quiz_ace_${userId}`;
+            const qPrev = parseInt(localStorage.getItem(qKey) || '0', 10);
+            localStorage.setItem(qKey, (qPrev + 1).toString());
+        }
+
         if (finalScore === quizData.length) {
-            // Gabaritou! Ganha 50 moedas e 1 baú
+            // Gabaritou! Ganha 50 moedas e 1 baú no backend
             try {
-                // Para dar moedas, podemos usar a rota de adicionar pontos, mas não criamos uma específica para o quiz ainda.
-                // Como workaround, podemos avisar o usuário para testar ou criar uma rota se necessário.
-                // Por enquanto, apenas daremos o feedback visual.
+                await fetch(`http://localhost:8080/api/usuarios/${userId}/recompensar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        moedas: 50,
+                        baus: 1,
+                        motivo: 'Quiz Diário Gabaritado'
+                    })
+                });
                 playChestSound();
                 toast.success(<span>Você gabaritou! Ganhou +50 moedas e 1 Baú! <Icon name="gift" /></span>, { duration: 4000 });
-                // NOTA: Para integração real de pontos, uma rota /api/usuarios/{id}/recompensa-quiz seria necessária no backend.
             } catch (e) {
                 console.error(e);
             }

@@ -111,6 +111,10 @@ export default function RevisaoSemanal() {
             });
 
             if (response.ok) {
+                const rKey = `@FocusMind:challenge_reviewer_${userId}`;
+                const rPrev = parseInt(localStorage.getItem(rKey) || '0', 10);
+                localStorage.setItem(rKey, (rPrev + 1).toString());
+
                 toast.dismiss(loadingToast);
                 toast.success("Revisão registrada! +30 moedas ganhas 🪙");
                 setOQueFoiBem('');

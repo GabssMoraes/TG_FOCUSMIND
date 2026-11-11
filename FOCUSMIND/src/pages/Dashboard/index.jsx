@@ -193,6 +193,7 @@ export default function Dashboard() {
 
     const metasDoneTotal = tasks.filter(t => t.status === 'C').length;
     const hasFocusMode = localStorage.getItem(`@FocusMind:unlockedFocusMode:${userId}`) === 'true';
+    const streakShields = parseInt(localStorage.getItem(`@FocusMind:streakShields:${userId}`) || '0', 10);
 
     const handleCheckInStart = (minutes) => {
         localStorage.setItem('@FocusMind:lastCheckIn', new Date().toISOString().split('T')[0]);
@@ -278,7 +279,7 @@ export default function Dashboard() {
                     <div className={styles.miniStat}>
                         <Icon name="fire" style={{ color: profile.streakDias > 0 ? '#ff6b6b' : '#555', fontSize: '0.85rem' }} />
                         <span className={styles.miniStatVal}>{profile.streakDias}</span>
-                        <span className={styles.miniStatLabel}>dias</span>
+                        <span className={styles.miniStatLabel}>dias{streakShields > 0 ? ` (🛡️${streakShields})` : ''}</span>
                     </div>
                     <div className={styles.miniStatDivider} />
                     <div className={styles.miniStat}>
@@ -444,6 +445,7 @@ export default function Dashboard() {
                         sessionCount={sessionsWeek}
                         metasDone={metasDoneTotal}
                         streakDias={profile.streakDias}
+                        onRewardClaimed={(moedas) => setProfile(prev => ({ ...prev, pontos: (prev.pontos || 0) + moedas }))}
                     />
                 </div>
             </div>

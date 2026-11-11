@@ -142,6 +142,9 @@ export default function TimeBlocking() {
             });
 
             if (response.ok) {
+                const sKey = `@FocusMind:challenge_schedule_${userId}`;
+                localStorage.setItem(sKey, blocks.length.toString());
+
                 toast.success("Grade de Time Blocking salva com sucesso!");
                 loadBlocks();
             } else {

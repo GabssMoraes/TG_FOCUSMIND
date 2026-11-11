@@ -14,10 +14,12 @@ export default function Chat() {
     const [messages, setMessages] = useState([DEFAULT_GREETING]);
     const [isLoading, setIsLoading] = useState(false);
     
-    // Novas states para sessões
+    // Novas states para sessões e recursos da Loja
     const [sessions, setSessions] = useState([]);
     const [activeSessionId, setActiveSessionId] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // para mobile
+    const [vipCredits, setVipCredits] = useState(() => parseInt(localStorage.getItem(`@FocusMind:premiumCredits:${userId}`) || '0', 10));
+    const [hasWeeklyReport, setHasWeeklyReport] = useState(() => localStorage.getItem(`@FocusMind:weeklyReport:${userId}`) === 'true');
 
     const chatBottomRef = useRef(null);
 
@@ -97,16 +99,24 @@ export default function Chat() {
         }
     };
 
-    const handleSendMessage = async () => {
-        if (!chatInput.trim() || isLoading) return;
+    const handleSendMessage = async (customMessage) => {
+        const textToSend = typeof customMessage === 'string' ? customMessage : chatInput;
+        if (!textToSend.trim() || isLoading) return;
 
-        const userMessage = chatInput;
+        const userMessage = textToSend;
         setMessages((prev) => [
             ...prev,
             { sender: 'user', text: formatMessage(userMessage) }
         ]);
-        setChatInput('');
+        if (typeof customMessage !== 'string') setChatInput('');
         setIsLoading(true);
+
+        // Atualiza progresso do desafio semanal "Estudante Curioso" (curious)
+        if (userId) {
+            const cKey = `@FocusMind:challenge_curious_${userId}`;
+            const cPrev = parseInt(localStorage.getItem(cKey) || '0', 10);
+            localStorage.setItem(cKey, (cPrev + 1).toString());
+        }
 
         try {
             const response = await fetch('http://localhost:8080/api/chat/perguntar', {
@@ -251,6 +261,32 @@ export default function Chat() {
                             >
                                 Criar rotina
                             </div>
+                            {vipCredits > 0 && (
+                                <div
+                                    className={styles.chip}
+                                    style={{ cursor: 'pointer', borderColor: '#7c6cfa', color: '#c0b8f7' }}
+                                    onClick={() => {
+                                        const next = vipCredits - 1;
+                                        setVipCredits(next);
+                                        localStorage.setItem(`@FocusMind:premiumCredits:${userId}`, next.toString());
+                                        toast.success(`Consulta VIP ativada! (${next} créditos restantes)`);
+                                        handleSendMessage('Elabore uma Consulta VIP: analise profundamente meus dados de metas, streak e sessões Pomodoro e monte um plano estratégico de estudos detalhado para a minha semana com micro-passos.');
+                                    }}
+                                >
+                                    ✨ Consulta VIP ({vipCredits})
+                                </div>
+                            )}
+                            {hasWeeklyReport && (
+                                <div
+                                    className={styles.chip}
+                                    style={{ cursor: 'pointer', borderColor: '#4ecdc4', color: '#4ecdc4' }}
+                                    onClick={() => {
+                                        handleSendMessage('Gere meu Relatório Semanal da IA completo: avalie meus padrões de foco, pontos fortes demonstrados nos meus dados e 3 recomendações práticas de melhoria.');
+                                    }}
+                                >
+                                    📊 Relatório Semanal da IA
+                                </div>
+                            )}
                         </div>
 
                         <div className={styles['chat-input-wrap']}>

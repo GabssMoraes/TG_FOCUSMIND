@@ -222,6 +222,11 @@ export default function LojaRecompensas() {
                     setCreditItems(prev => ({ ...prev, [item.localKey]: next }));
                 }
 
+                // Atualiza progresso do desafio semanal "Investidor" (shop)
+                const shopChallengeKey = `@FocusMind:challenge_shop_${userId}`;
+                const prevShopCount = parseInt(localStorage.getItem(shopChallengeKey) || '0', 10);
+                localStorage.setItem(shopChallengeKey, (prevShopCount + 1).toString());
+
                 playPurchaseSound();
                 triggerConfetti(item.id);
                 toast.success(
@@ -418,10 +423,10 @@ export default function LojaRecompensas() {
             <div className={styles.tipBox}>
                 <div className={styles.tipTitle}><Icon name="info" /> Como ganhar moedas</div>
                 <div className={styles.tipGrid}>
-                    <div className={styles.tipItem}><span><Icon name="timer" /></span><span>Concluir sessão Pomodoro</span><strong>+3</strong></div>
+                    <div className={styles.tipItem}><span><Icon name="timer" /></span><span>Concluir sessão Pomodoro</span><strong>+10</strong></div>
                     <div className={styles.tipItem}><span><Icon name="target" /></span><span>Concluir uma meta</span><strong>+5</strong></div>
-                    <div className={styles.tipItem}><span><Icon name="calendar" /></span><span>Revisão Semanal completa</span><strong>+10</strong></div>
-                    <div className={styles.tipItem}><span><Icon name="fire" /></span><span>Manter streak diária</span><strong>+2/dia</strong></div>
+                    <div className={styles.tipItem}><span><Icon name="calendar" /></span><span>Revisão Semanal completa</span><strong>+30</strong></div>
+                    <div className={styles.tipItem}><span><Icon name="star" /></span><span>Desafios Semanais e Quiz</span><strong>+15 a +50</strong></div>
                 </div>
             </div>
 

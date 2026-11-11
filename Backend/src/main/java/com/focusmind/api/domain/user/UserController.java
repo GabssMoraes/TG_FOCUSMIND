@@ -226,12 +226,45 @@ public class UserController {
         return ResponseEntity.ok(moedasPagas);
     }
 
+    @PostMapping("/{id}/recompensar")
+    public ResponseEntity recompensar(@PathVariable Long id, @RequestBody RecompensaRequestDTO data) {
+        var userOptional = userRepository.findById(id);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOptional.get();
+        if (data.moedas() != null && data.moedas() > 0) {
+            user.setPontos((user.getPontos() == null ? 0 : user.getPontos()) + data.moedas());
+        }
+        if (data.baus() != null && data.baus() > 0) {
+            user.setBausDisponiveis((user.getBausDisponiveis() == null ? 0 : user.getBausDisponiveis()) + data.baus());
+        }
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new PerfilDTO(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getNivel(),
+            user.getPontos(),
+            user.getStreakDias(),
+            user.getMateriaEstudo(),
+            user.getHorasDiaDisponiveis(),
+            user.getDataLimiteEstudo(),
+            user.getTempoTotalEstudoHoras(),
+            user.getBausDisponiveis()
+        ));
+    }
+
     public record PerfilDTO(
         Long id, String name, String email, Long nivel, Integer pontos, Integer streakDias,
         String materiaEstudo, Integer horasDiaDisponiveis, LocalDate dataLimiteEstudo, Integer tempoTotalEstudoHoras,
         Integer bausDisponiveis
     ) {}
     public record GastarRequestDTO(Integer preco, String item) {}
+    public record RecompensaRequestDTO(Integer moedas, Integer baus, String motivo) {}
     public record SubTopicosResponseDTO(String subtopicos) {}
     public record AlertaEmailDTO(Boolean ativo) {}
 }

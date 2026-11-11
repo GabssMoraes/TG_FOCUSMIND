@@ -216,8 +216,9 @@ export default function Timer() {
     const [motivacao, setMotivacao] = useState('Alta');
     const [comentario, setComentario] = useState('');
 
-    // Ambient audio states
+    // Ambient audio & extended session states
     const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
+    const [isExtendedUnlocked, setIsExtendedUnlocked] = useState(false);
     const [selectedAudio, setSelectedAudio] = useState('none');
     const [isPlayingAudio, setIsPlayingAudio] = useState(false);
     const audioRef = useRef(null);
@@ -269,9 +270,11 @@ export default function Timer() {
                 }
             }
 
-            // Checar se o modo foco está desbloqueado no localStorage
+            // Checar se o modo foco e sessões estendidas estão desbloqueados no localStorage
             const unlocked = localStorage.getItem(`@FocusMind:unlockedFocusMode:${userId}`);
             setIsAudioUnlocked(unlocked === 'true');
+            const extended = localStorage.getItem(`@FocusMind:extendedSessions:${userId}`);
+            setIsExtendedUnlocked(extended === 'true');
         } catch (error) {
             console.error("Erro ao obter estatísticas de foco:", error);
         }
@@ -398,6 +401,18 @@ export default function Timer() {
             });
 
             if (response.ok) {
+                // Atualizar contadores de Desafios Semanais
+                if (nivelFoco >= 4) {
+                    const fKey = `@FocusMind:challenge_focused_${userId}`;
+                    const fPrev = parseInt(localStorage.getItem(fKey) || '0', 10);
+                    localStorage.setItem(fKey, (fPrev + 1).toString());
+                }
+                if (currentMode >= 45) {
+                    const lKey = `@FocusMind:challenge_long_sess_${userId}`;
+                    const lPrev = parseInt(localStorage.getItem(lKey) || '0', 10);
+                    localStorage.setItem(lKey, (lPrev + 1).toString());
+                }
+
                 toast.success("Sessão registrada! +10 moedas ganhas");
                 setShowFeedbackModal(false);
                 setDistracoes('');
@@ -453,10 +468,30 @@ export default function Timer() {
                         <Icon name="star" style={{ marginRight: '6px' }} /> 15 min (TDAH)
                     </button>
                     <button
-                        className={`${styles.chip} ${currentMode === 50 ? styles.activeChip : ''}`}
-                        onClick={() => changeMode(50)}
+                        className={`${styles.chip} ${currentMode === 45 ? styles.activeChip : ''}`}
+                        onClick={() => {
+                            if (!isExtendedUnlocked) {
+                                toast.error("Desbloqueie 'Sessões Estendidas' na Loja de Recompensas!");
+                                return;
+                            }
+                            changeMode(45);
+                        }}
+                        style={{ opacity: isExtendedUnlocked ? 1 : 0.6 }}
                     >
-                        <Icon name="fire" style={{ marginRight: '6px' }} /> 50 min (Avançado)
+                        <Icon name={isExtendedUnlocked ? "fire" : "lock"} style={{ marginRight: '6px' }} /> 45 min {!isExtendedUnlocked && '🔒'}
+                    </button>
+                    <button
+                        className={`${styles.chip} ${currentMode === 60 ? styles.activeChip : ''}`}
+                        onClick={() => {
+                            if (!isExtendedUnlocked) {
+                                toast.error("Desbloqueie 'Sessões Estendidas' na Loja de Recompensas!");
+                                return;
+                            }
+                            changeMode(60);
+                        }}
+                        style={{ opacity: isExtendedUnlocked ? 1 : 0.6 }}
+                    >
+                        <Icon name={isExtendedUnlocked ? "fire" : "lock"} style={{ marginRight: '6px' }} /> 60 min {!isExtendedUnlocked && '🔒'}
                     </button>
                 </div>
 
